@@ -19,8 +19,8 @@
 bl_info = {
     "name": "Annocfg ImportExport",
     "author": "xormenter",
-    "version": (3, 3, 1),
-    "blender": (3, 2, 0),
+    "version": (4, 0, 0),
+    "blender": (4, 2, 0),
     "location": "File > Import > Anno (.cfg)",
     "description": "Allows importing and exporting configuration files for Anno 1800 3d models.",
     "doc_url": "https://github.com/xormenter/Blender-Anno-.cfg-Import-Addon",
@@ -31,12 +31,13 @@ bl_info = {
 import bpy
 import os
 
-from . import operators
 from . import prefs
+from . import operators
 
 from . import anno_objects
 from . import anno_object_ui
 from . import feedback_ui
+from .operator import cfg_operators
 
 # =========================================================================
 # Registration:
@@ -46,6 +47,7 @@ from . import feedback_ui
 
 def register():
     operators.register()
+    cfg_operators.register()
     prefs.register()
     anno_objects.register()
     anno_object_ui.register()
@@ -56,6 +58,7 @@ def register():
 
 def unregister():
     operators.unregister()
+    cfg_operators.unregister()
     prefs.unregister()
     anno_objects.unregister()
     anno_object_ui.unregister()

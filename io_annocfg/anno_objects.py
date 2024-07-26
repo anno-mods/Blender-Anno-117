@@ -412,11 +412,30 @@ class Cloth(AnnoObject):
     material_class = ClothMaterial
     
     @classmethod
+    def default_node(cls: Type[T]):
+        node = super().default_node() # type: ignore
+        node.tag = "Config"
+        ET.SubElement(node, "ConfigType").text ="CLOTH"
+        ET.SubElement(node, "Materials")
+        ET.SubElement(node, "Name")
+        ET.SubElement(node, "FileName")
+        ET.SubElement(node, "AllowLocalWind").text= "1"
+        ET.SubElement(node, "UniqueSimulation").text= "1"
+        ET.SubElement(node, "LocalWindDirection").text= "0.000000"
+        ET.SubElement(node, "WindStrength").text= "1.000000"
+        ET.SubElement(node, "Gravity").text= "0.100000"
+        ET.SubElement(node, "LineSize").text= "1.000000"
+        return node
+    
+    @classmethod
     def add_blender_object_to_scene(cls, node) -> BlenderObject:
         data_path = get_text(node, "FileName")
-        imported_obj = import_model_to_scene(data_path)
+        imported_obj = None
+        if data_path is not "":
+            imported_obj = import_model_to_scene(data_path)
         if imported_obj is None:
-            return add_empty_to_scene()
+            bpy.ops.mesh.primitive_plane_add(size=1, enter_editmode=False, align='WORLD', location=(0,0,0), scale=(1,1,1))
+            imported_obj = bpy.context.active_object
         return imported_obj
 
 # Not really worth it to have this as its own object, I think. But maybe I'm wrong, so I'll leave it here.
@@ -555,13 +574,26 @@ class Model(AnnoObject):
     enforce_equal_scale = True #scale.x, .y and .z must be equal
     has_materials = True
 
+    @classmethod
+    def default_node(cls: Type[T]):
+        node = super().default_node() # type: ignore
+        node.tag = "Config"
+        ET.SubElement(node, "ConfigType").text ="MODEL"
+        ET.SubElement(node, "Materials")
+        ET.SubElement(node, "Name")
+        ET.SubElement(node, "FileName")
+        ET.SubElement(node, "IgnoreRuinState").text= "0"
+        return node
 
     @classmethod
     def add_blender_object_to_scene(cls, node) -> BlenderObject:
+        print(node)
         data_path = get_text(node, "FileName")
-        imported_obj = import_model_to_scene(data_path)
+        imported_obj = None 
+        if data_path is not "":
+            imported_obj = import_model_to_scene(data_path)
         if imported_obj is None:
-            bpy.ops.mesh.primitive_cube_add(size = 0.1, location=(0,0,0))
+            bpy.ops.mesh.primitive_cube_add(size = 1.0, location=(0,0,0))
             obj = bpy.context.active_object
             return obj
         return imported_obj
@@ -620,6 +652,16 @@ class SubFile(AnnoObject):
     }
     enforce_equal_scale = True #scale.x, .y and .z must be equal
     has_materials = False
+
+    @classmethod
+    def default_node(cls: Type[T]):
+        node = super().default_node() # type: ignore
+        node.tag = "Config"
+        ET.SubElement(node, "ConfigType").text ="FILE"
+        ET.SubElement(node, "Name")
+        ET.SubElement(node, "FileName")
+        ET.SubElement(node, "AdaptTerrainHeight").text= "0"
+        return node
     
     @classmethod 
     def try_loading_from_library(cls, data_path, last_modified):
@@ -846,6 +888,16 @@ class Propcontainer(AnnoObject):
     child_anno_object_types = {
         "Props" : Prop,
     }
+
+    @classmethod
+    def default_node(cls: Type[T]):
+        node = super().default_node() # type: ignore
+        node.tag = "Config"
+        ET.SubElement(node, "ConfigType").text ="PROPCONTAINER"
+        ET.SubElement(node, "Name")
+        ET.SubElement(node, "VariationEnabled").text="0"
+        ET.SubElement(node, "VariationProbability").text="100"
+        return node
 
 class Light(AnnoObject):
     has_transform = True
@@ -1488,6 +1540,31 @@ class MainFile(AnnoObject):
     child_anno_object_types_without_container = {
         "Sequences" : AnimationSequences,
     }
+
+    @classmethod
+    def default_node(cls: Type[T]):
+        node = super().default_node() # type: ignore
+        node.tag = "Config"
+        ET.SubElement(node, "ConfigType").text ="MAIN"
+        ET.SubElement(node, "RenderPropertyFlags").text ="134349184"
+        ET.SubElement(node, "Radius").text = "0"
+        ET.SubElement(node, "MeshRadius").text = "0"
+        ET.SubElement(node, "Center.x").text = "0.00"
+        ET.SubElement(node, "Center.y").text = "0.00"
+        ET.SubElement(node, "Center.z").text = "0.00"
+        ET.SubElement(node, "Extent.x").text = "0.00"
+        ET.SubElement(node, "Extent.y").text = "0.00"
+        ET.SubElement(node, "Extent.z").text = "0.00"
+        ET.SubElement(node, "Mass").text = "1.00"
+        ET.SubElement(node, "Drag").text = "1.00"
+        ET.SubElement(node, "MeshCenter.x").text = "0.00"
+        ET.SubElement(node, "MeshCenter.y").text = "0.00"
+        ET.SubElement(node, "MeshCenter.z").text = "0.00"
+        ET.SubElement(node, "MeshExtent.x").text = "0.00"
+        ET.SubElement(node, "MeshExtent.y").text = "0.00"
+        ET.SubElement(node, "MeshExtent.z").text = "0.00"
+        return node
+
     @classmethod
     def add_blender_object_to_scene(cls, node) -> BlenderObject:
         file_obj = add_empty_to_scene()  

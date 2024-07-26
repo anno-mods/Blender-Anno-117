@@ -225,20 +225,19 @@ class Material:
     def create_anno_shader(self):
         anno_shader = bpy.data.node_groups.new('AnnoShader', 'ShaderNodeTree')
         
-        anno_shader.inputs.new("NodeSocketColor", "cDiffuse")
-        anno_shader.inputs.new("NodeSocketColor", "cDiffuseMultiplier")
-        anno_shader.inputs.new("NodeSocketFloat", "Alpha")
-        anno_shader.inputs.new("NodeSocketColor", "cNormal")
-        anno_shader.inputs.new("NodeSocketFloat", "Glossiness")
-        anno_shader.inputs.new("NodeSocketColor", "cMetallic")
-        anno_shader.inputs.new("NodeSocketColor", "cHeight")
-        anno_shader.inputs.new("NodeSocketColor", "cNightGlow")
-        anno_shader.inputs.new("NodeSocketColor", "cEmissiveColor")
-        anno_shader.inputs.new("NodeSocketFloat", "EmissionStrength")
-        anno_shader.inputs.new("NodeSocketColor", "cDyeMask")
+        anno_shader.interface.new_socket(socket_type = "NodeSocketColor", name = "cDiffuse", in_out='INPUT')
+        anno_shader.interface.new_socket(socket_type = "NodeSocketColor", name = "cDiffuseMultiplier", in_out='INPUT')
+        anno_shader.interface.new_socket(socket_type = "NodeSocketFloat", name = "Alpha", in_out='INPUT')
+        anno_shader.interface.new_socket(socket_type = "NodeSocketColor", name = "cNormal", in_out='INPUT')
+        anno_shader.interface.new_socket(socket_type = "NodeSocketFloat", name = "Glossiness", in_out='INPUT')
+        anno_shader.interface.new_socket(socket_type = "NodeSocketColor", name = "cMetallic", in_out='INPUT')
+        anno_shader.interface.new_socket(socket_type = "NodeSocketColor", name = "cHeight", in_out='INPUT')
+        anno_shader.interface.new_socket(socket_type = "NodeSocketColor", name = "cNightGlow", in_out='INPUT')
+        anno_shader.interface.new_socket(socket_type = "NodeSocketColor", name = "cEmissiveColor", in_out='INPUT')
+        anno_shader.interface.new_socket(socket_type = "NodeSocketFloat", name = "EmissionStrength", in_out='INPUT')
+        anno_shader.interface.new_socket(socket_type = "NodeSocketColor", name = "cDyeMask", in_out='INPUT')
         
-        
-        anno_shader.outputs.new("NodeSocketShader", "Shader")
+        anno_shader.interface.new_socket(socket_type = "NodeSocketShader", name = "Shader", in_out='OUTPUT')
         
         inputs = self.add_shader_node(anno_shader, "NodeGroupInput", 
                                         position = (0, 0), 
@@ -382,7 +381,7 @@ class Material:
                             name = "EmissionScale",
                             position = (1, -1),
                             default_inputs = {
-                                "Scale": 10,
+                                "Scale": 10.0,
                             },
                             inputs = {
                                 "Vector" : inputs["cEmissiveColor"],
@@ -452,9 +451,10 @@ class Material:
                                             "Base Color" : final_diffuse.outputs["Color"],
                                             "Metallic" : metallic.outputs["Val"],
                                             "Emission Strength" : inputs["EmissionStrength"],
-                                            "Emission" : final_emission_color.outputs["Color"],
-                                            
-                                            
+                                            "Emission Color" : final_emission_color.outputs["Color"],
+                                        },
+                                        default_inputs = {
+                                            "Alpha": 1.0,
                                         },
                                     )
         outputs = self.add_shader_node(anno_shader, "NodeGroupOutput", 
@@ -571,14 +571,30 @@ class Material:
         x,y = kwargs.pop("position", (0,0))
         node.location.x = x* positioning_unit[0] - positioning_offset[0]
         node.location.y = y* positioning_unit[1] - positioning_offset[1]
+
         if "name" in kwargs and not "label" in kwargs:
             kwargs["label"] = kwargs["name"]
+
         for input_key, default_value in kwargs.pop("default_inputs", {}).items():
-            node.inputs[input_key].default_value = default_value
+            print(input_key)
+
+            nodeinput = None
+            if type(input_key) is int: 
+                nodeinput = node.inputs[input_key]
+            elif type(input_key) is str:
+                nodeinput = node.inputs.get(input_key)
+
+            if(nodeinput is None):
+                print("WTF: " + node_type + " | " + input_key)
+                continue
+            nodeinput.default_value = default_value
+
         for input_key, input_connector in kwargs.pop("inputs", {}).items():
              node_tree.links.new(node.inputs[input_key], input_connector)
+
         for attr, value in kwargs.items():
             setattr(node, attr, value)
+
         return node
     
     def add_shader_node_to_material(self, material, node_type, **kwargs):
