@@ -7,6 +7,7 @@ from bpy_extras.object_utils import AddObjectHelper
 
 from ..anno_objects import MainFile, Model, Propcontainer, Prop, Cloth, Decal, SubFile, ClothMaterial
 from ..material import Material
+from ..shaders.default_shader import AnnoDefaultShader
 
 class generic_cfg_object(Operator, AddObjectHelper):
     bl_idname = "mesh.add_anno_cfgobj"
@@ -150,9 +151,11 @@ class shader_default(bpy.types.Operator):
 
     def execute(self, context):
         node_tree = context.object.active_material.node_tree
-        my_group = Material().add_anno_shader(node_tree.nodes)
+        my_group = AnnoDefaultShader().add_anno_shader(node_tree.nodes)
         return {"FINISHED"}
 
+
+# todo (Taube) this is broken, reimplement this operator for actual cloth when shaders are rewritten.
 class shader_cloth(bpy.types.Operator):
     bl_idname = "node.add_anno_shader_cloth"
     bl_label  = "Add Custom Node Group"
@@ -164,7 +167,7 @@ class shader_cloth(bpy.types.Operator):
 
     def execute(self, context):
         node_tree = context.object.active_material.node_tree
-        my_group = ClothMaterial().add_anno_shader(node_tree.nodes)
+        my_group = AnnoDefaultShader().add_anno_shader(node_tree.nodes)
         return {"FINISHED"}
 
 classes = (

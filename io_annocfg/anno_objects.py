@@ -23,6 +23,8 @@ from .transform import Transform
 from .material import Material, ClothMaterial
 from .feedback_ui import FeedbackConfigItem, GUIDVariationListItem, FeedbackSequenceListItem
 from . import feedback_enums
+
+from .shaders import default_shader as SHADER
 # import numpy as np
 
 def convert_to_glb(fullpath: Path):
@@ -294,7 +296,7 @@ class AnnoObject(ABC):
             materials_node = find_or_create(node, "Materials")
             if obj.data and obj.data.materials:
                 for blender_material in obj.data.materials:
-                    material = cls.material_class.from_blender_material(blender_material)
+                    material = SHADER.AnnoDefaultShader().from_blender_material(blender_material)
                     material.to_xml_node(parent = materials_node)
                 
         cls.add_children_from_obj(obj, node, child_map) 

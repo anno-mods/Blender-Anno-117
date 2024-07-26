@@ -125,3 +125,23 @@ def find_or_create(parent: ET.Element, simple_query: str) -> ET.Element:
         return find_or_create(queried_node, parts[1])
     return queried_node
 
+def xml_bool(parent : ET.Element, key, value : bool):
+    elem = ET.SubElement(parent, key)
+    elem.text = "1" if value else "0"
+
+def xml_default(parent : ET.Element, key, value):
+    elem = ET.SubElement(parent, key)
+    elem.text = str(value)
+
+def xml_dict(parent : ET.Element, key, value : str):
+    for subkey, val in value.items():
+        elem = ET.SubElement(parent, key + "." + subkey)
+        elem.text = str(val) 
+
+def xml_smart(parent : ET.Element, key, value):
+    datatype = type(value)
+    switchDict = {bool: xml_bool, dict: xml_dict}
+    if datatype in switchDict:
+        switchDict[datatype](parent, key, value)
+        return 
+    xml_default(parent, key, value)
