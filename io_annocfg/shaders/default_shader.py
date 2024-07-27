@@ -2,6 +2,11 @@ import bpy
 from .shader_base import AnnoBasicShader
 from .shader_components import *
 
+from ..utils import to_data_path
+import os
+from pathlib import Path
+from ..prefs import IO_AnnocfgPreferences
+
 class AnnoDefaultShader(AnnoBasicShader):
 
     def __init__(self):
@@ -15,8 +20,6 @@ class AnnoDefaultShader(AnnoBasicShader):
 
         # override default vertexformat
         self.material_properties["VertexFormat"] = "P4h_N4b_G4b_B4b_T2h"
-        print(self.material_properties)
-        ET.dump(self.to_xml_node())
         
     def add_anno_shader(self, nodes):
         group = nodes.new(type='ShaderNodeGroup')
@@ -25,18 +28,45 @@ class AnnoDefaultShader(AnnoBasicShader):
         group.node_tree = bpy.data.node_groups["AnnoDefaultShader"]
         return group
 
+    def texture_quality_suffix(self):
+        return "_"+IO_AnnocfgPreferences.get_texture_quality()
+
     def from_blender_material(cls, blender_material):
+
+        # determine type of shader by nodegroup name 
+        shader = AnnoDefaultShader()
+
         links = blender_material.node_tree.links.items()
         for index, link in links: 
             # https://docs.blender.org/api/current/bpy.types.NodeLink.html#bpy.types.NodeLink
+            
+            if link.to_socket.name not in shader.texture_links:
+                continue    
+
+            # todo check whether socket links to right shader
+            print(link.to_socket.name)
+            texture_node = link.from_node
+
+            if not texture_node.image:
+                print("Invalid texture node link")
+                continue 
+
+            filepath_full = os.path.realpath(bpy.path.abspath(texture_node.image.filepath, library=texture_node.image.library))
+            texture_path = to_data_path(filepath_full)
+            #Rename "data/.../some_diff_0.png" to "data/.../some_diff.psd"
+            extension = ".psd"
+            texture_path = Path(texture_path.as_posix().replace(shader.texture_quality_suffix()+".", ".")).with_suffix(extension)
+
+            texture_link = shader.texture_links[link.to_socket.name]
+            shader.material_properties[texture_link.flag_key] = True 
+            shader.material_properties[texture_link.texture_key] = texture_path.as_posix()
 
             # here we go through NodeLinks one by one.
             # if we find a link from a socket named cDiffuse to an ImageTexture, that one is our texture file. 
             # Maybe we should also create an abstraction that just describes which socket links to which flag and texture path. 
             # That way, we iterate and check the targetSocket's name and whether inSocket is an imagetexture.
             # If it matches one of our descriptions, we use that texture for export.
-
-            print("Link from " + link.from_node.bl_label + " to " + link.to_node.bl_label)
+        return shader
 
     def create_anno_shader(self):
         anno_shader = bpy.data.node_groups.new('AnnoDefaultShader', 'ShaderNodeTree')

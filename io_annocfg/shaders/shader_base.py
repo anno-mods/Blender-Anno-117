@@ -1,10 +1,12 @@
 import bpy
 import xml.etree.ElementTree as ET
-from .shader_components import AbstractShaderComponent
+from .shader_components import AbstractShaderComponent, TextureLink
 from ..utils import xml_smart
 
 class AnnoBasicShader: 
     def __init__(self):
+
+        self.texture_links = { }
 
         self.material_properties = {
             "ConfigType" : "MATERIAL",
@@ -21,9 +23,10 @@ class AnnoBasicShader:
 
     def compose(self, shaderComponent : AbstractShaderComponent):
         self.material_properties.update(shaderComponent.component_properties)
+        self.texture_links.update(shaderComponent.texture_links)
 
-    def to_xml_node(self) -> ET.Element:
-        root = ET.Element("Config")
+    def to_xml_node(self, parent : ET.Element) -> ET.Element:
+        root = ET.SubElement(parent, "Config")
 
         for key, value in self.material_properties.items(): 
             xml_smart(root, key, value)

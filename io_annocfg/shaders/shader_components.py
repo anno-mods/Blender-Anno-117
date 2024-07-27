@@ -1,8 +1,14 @@
 import xml.etree.ElementTree as ET
 
+class TextureLink: 
+    def __init__(self, flag_key, texture_key):
+        self.flag_key = flag_key 
+        self.texture_key = texture_key
+
 class AbstractShaderComponent:
     def __init__():
         self.component_properties = {}
+        self.texture_links = {}
 
 class DefaultShaderFakeComponent(AbstractShaderComponent): 
     def __init__(self):
@@ -13,8 +19,11 @@ class DefaultShaderFakeComponent(AbstractShaderComponent):
             "SEPARATE_AO_TEXTURE" : False,
             "cSeparateAOTex" : ""
         }
+        self.texture_links = {
+            "cMetallic" : TextureLink("METALLIC_TEX_ENABLED", "cModelMetallicTex")
+        }
 
-class CommonShaderComponent: 
+class CommonShaderComponent(AbstractShaderComponent): 
     def __init__(self):
         self.component_properties = {
             "Common" : "Common",
@@ -35,8 +44,14 @@ class CommonShaderComponent:
             "SELF_SHADOWING_ENABLED" : False, 
             "WATER_CUTOUT_ENABLED" : False
         }
+        self.texture_links = {
+            "cDiffuse" : TextureLink("DIFFUSE_ENABLED", "cModelDiffTex"),            
+            "cNormal" : TextureLink("NORMAL_ENABLED", "cModelNormalTex"),
+            "cDyeMask" : TextureLink("DYE_MASK_ENABLED", "cDyeMask"),
+            "cHeight" : TextureLink("HEIGHT_MAP_ENABLED", "cHeightMap"),
+        }
 
-class TerrainAdaptionShaderComponent:
+class TerrainAdaptionShaderComponent(AbstractShaderComponent):
     def __init__(self):
         self.component_properties = {
             "TerrainAdaption" : "TerrainAdaption",
@@ -44,16 +59,18 @@ class TerrainAdaptionShaderComponent:
             "VERTEX_COLORED_TERRAIN_ADAPTION" : False,
             "ABSOLUTE_TERRAIN_ADAPTION" : False
         }
+        self.texture_links = {}
 
-class EnvironmentShaderComponent: 
+class EnvironmentShaderComponent(AbstractShaderComponent): 
     def __init__(self): 
         self.component_properties = {
             "Environment" : "Environment",
             "cUseLocalEnvironmentBox" : True,
             "cEnvironmentBoundingBox" : {"x" : 0.0, "y" : 0.0, "z" : 0.0, "w" : 4.0}
         }
+        self.texture_links = {}
 
-class GlowShaderComponent: 
+class GlowShaderComponent(AbstractShaderComponent): 
     def __init__(self):
         self.component_properties = {
             "Glow" : "Glow",
@@ -61,4 +78,7 @@ class GlowShaderComponent:
             "cEmissiveColor" : {"r" : 1.0, "g" : 1.0, "b": 1.0},
             "NIGHT_GLOW_ENABLED" : False,
             "cNightGlowMap" : ""
+        }
+        self.texture_links = {
+            "cNightGlow" : TextureLink("NIGHT_GLOW_ENABLED", "cNightGlowMap")
         }
