@@ -31,17 +31,20 @@ class AnnoDefaultShader(AnnoBasicShader):
     def texture_quality_suffix(self):
         return "_"+IO_AnnocfgPreferences.get_texture_quality()
 
+    # this should just become a direct xml export over here
     def from_blender_material(cls, blender_material):
-
         # determine type of shader by nodegroup name 
         shader = AnnoDefaultShader()
 
         links = blender_material.node_tree.links.items()
+        # todo we should just check links that have our AnnoShader as a target node. 
+
         for index, link in links: 
             # https://docs.blender.org/api/current/bpy.types.NodeLink.html#bpy.types.NodeLink
             
-            if link.to_socket.name not in shader.texture_links:
-                continue    
+            # if shader does not support the input link, we are 
+            if not shader.has_link(link.to_socket.name):
+                continue
 
             # todo check whether socket links to right shader
             print(link.to_socket.name)
@@ -57,7 +60,7 @@ class AnnoDefaultShader(AnnoBasicShader):
             extension = ".psd"
             texture_path = Path(texture_path.as_posix().replace(shader.texture_quality_suffix()+".", ".")).with_suffix(extension)
 
-            texture_link = shader.texture_links[link.to_socket.name]
+            texture_link = shader.get_link(link.to_socket.name)
             shader.material_properties[texture_link.flag_key] = True 
             shader.material_properties[texture_link.texture_key] = texture_path.as_posix()
 
@@ -70,21 +73,18 @@ class AnnoDefaultShader(AnnoBasicShader):
 
     def create_anno_shader(self):
         anno_shader = bpy.data.node_groups.new('AnnoDefaultShader', 'ShaderNodeTree')
-        
-        anno_shader.interface.new_socket(socket_type = "NodeSocketColor", name = "cDiffuse", in_out='INPUT')
-        anno_shader.interface.new_socket(socket_type = "NodeSocketColor", name = "cDiffuseMultiplier", in_out='INPUT')
-        anno_shader.interface.new_socket(socket_type = "NodeSocketFloat", name = "Alpha", in_out='INPUT')
-        anno_shader.interface.new_socket(socket_type = "NodeSocketColor", name = "cNormal", in_out='INPUT')
-        anno_shader.interface.new_socket(socket_type = "NodeSocketFloat", name = "Glossiness", in_out='INPUT')
-        anno_shader.interface.new_socket(socket_type = "NodeSocketColor", name = "cMetallic", in_out='INPUT')
-        anno_shader.interface.new_socket(socket_type = "NodeSocketColor", name = "cHeight", in_out='INPUT')
-        anno_shader.interface.new_socket(socket_type = "NodeSocketColor", name = "cNightGlow", in_out='INPUT')
-        anno_shader.interface.new_socket(socket_type = "NodeSocketColor", name = "cEmissiveColor", in_out='INPUT')
-        anno_shader.interface.new_socket(socket_type = "NodeSocketFloat", name = "EmissionStrength", in_out='INPUT')
-        anno_shader.interface.new_socket(socket_type = "NodeSocketColor", name = "cDyeMask", in_out='INPUT')
+
+        for l in self.links: 
+            if not l.has_socket():
+                continue
+
+            socket = anno_shader.interface.new_socket(socket_type = l.socket_type, name = l.link_key, in_out = 'INPUT')
+            if l.has_default_value():
+                socket.default_value = l.default_value    
         
         anno_shader.interface.new_socket(socket_type = "NodeSocketShader", name = "Shader", in_out='OUTPUT')
-        
+                
+        # bring this into the individual components or something
         inputs = self.add_shader_node(anno_shader, "NodeGroupInput", 
                                         position = (0, 0), 
                                     ).outputs
@@ -296,11 +296,11 @@ class AnnoDefaultShader(AnnoBasicShader):
                                             "Normal" : bump_map.outputs["Normal"],
                                             "Base Color" : final_diffuse.outputs["Color"],
                                             "Metallic" : metallic.outputs["Val"],
-                                            "Emission Strength" : inputs["EmissionStrength"],
                                             "Emission Color" : final_emission_color.outputs["Color"],
                                         },
                                         default_inputs = {
                                             "Alpha": 1.0,
+                                            "Emission Strength" : 1.0
                                         },
                                     )
         outputs = self.add_shader_node(anno_shader, "NodeGroupOutput", 
@@ -309,7 +309,3 @@ class AnnoDefaultShader(AnnoBasicShader):
                                             "Shader" : bsdf.outputs["BSDF"]
                                         },
                                     )
-
-def dump(obj):
-  for attr in dir(obj):
-    print("obj.%s = %r" % (attr, getattr(obj, attr)))

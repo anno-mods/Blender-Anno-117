@@ -1,12 +1,12 @@
 import bpy
 import xml.etree.ElementTree as ET
-from .shader_components import AbstractShaderComponent, TextureLink
+from .shader_components import AbstractShaderComponent
 from ..utils import xml_smart
 
 class AnnoBasicShader: 
     def __init__(self):
 
-        self.texture_links = { }
+        self.links = []
 
         self.material_properties = {
             "ConfigType" : "MATERIAL",
@@ -15,6 +15,7 @@ class AnnoBasicShader:
             "VertexFormat" : "",
             "NumBonesPerVertex" : 0
         }
+        self.__link_by_key = { }
 
     def set_property(self, key, value):
         assert key in self.material_properties, "Invalid Property: " + key
@@ -22,14 +23,27 @@ class AnnoBasicShader:
         self.material_properties[key] = value
 
     def compose(self, shaderComponent : AbstractShaderComponent):
-        self.material_properties.update(shaderComponent.component_properties)
-        self.texture_links.update(shaderComponent.texture_links)
+        self.links = self.links + shaderComponent.links
 
-    def to_xml_node(self, parent : ET.Element) -> ET.Element:
+        for link in shaderComponent.links: 
+            self.__link_by_key[link.link_key] = link
+
+    def has_link(self, link_key):
+        return link_key in self.__link_by_key
+
+    def get_link(self, link_key):
+        return self.__link_by_key(link_key)
+
+    # exports all links we have
+    def to_xml_node(self, parent : ET.Element, blender_material) -> ET.Element:
         root = ET.SubElement(parent, "Config")
-
-        for key, value in self.material_properties.items(): 
-            xml_smart(root, key, value)
+        for key, value in self.material_properties.items():
+            sub = ET.SubElement(root, key)
+            sub.text = str(value)
+        for link in self.links: 
+            if link.is_invalid:
+                continue
+            link.to_xml(root, blender_material)
         return root
 
     def create_anno_shader(self):

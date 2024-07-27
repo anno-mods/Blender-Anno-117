@@ -296,8 +296,7 @@ class AnnoObject(ABC):
             materials_node = find_or_create(node, "Materials")
             if obj.data and obj.data.materials:
                 for blender_material in obj.data.materials:
-                    material = SHADER.AnnoDefaultShader().from_blender_material(blender_material)
-                    material.to_xml_node(parent = materials_node)
+                    SHADER.AnnoDefaultShader().to_xml_node(blender_material = blender_material, parent = materials_node)
                 
         cls.add_children_from_obj(obj, node, child_map) 
         cls.blender_to_xml_finish(obj, node)
