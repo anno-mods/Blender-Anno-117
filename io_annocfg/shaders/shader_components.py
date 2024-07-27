@@ -26,6 +26,13 @@ class AbstractLink:
     def to_xml(self, parent, blender_material):
         return None
 
+    def to_blender(self, material_node : ET.Element, blender_material):
+        return 
+
+    def get_input(self, blender_material):
+        group = [n for n in blender_material.node_tree.nodes if n.bl_idname == "ShaderNodeGroup"]
+        return group[0].inputs.get(self.link_key)
+
 class StaticFakeLink(AbstractLink):
     def __init__(self, link_key, flag_key, static_value : str, is_invalid = False):
         super().__init__(static_value, is_invalid)
@@ -36,6 +43,9 @@ class StaticFakeLink(AbstractLink):
     def to_xml(self, parent : ET.Element, blender_material):
         flag = ET.SubElement(parent, self.flag_key)
         flag.text = self.default_value
+
+    def to_blender(self, material_node : ET.Element, blender_material):
+        return 
 
 class TextureLink(AbstractLink): 
     def __init__(self, link_key, flag_key, texture_key, is_invalid = False, default_value = None):
@@ -73,6 +83,9 @@ class TextureLink(AbstractLink):
         tex = ET.SubElement(parent, self.texture_key)
         tex.text = str(texture_path)
 
+    def to_blender(self, material_node : ET.Element, blender_material):
+        return 
+
 class FlagLink(AbstractLink): 
     def __init__(self, link_key, flag_key, is_invalid = False, default_value = None):
         super().__init__(default_value, is_invalid)
@@ -81,15 +94,18 @@ class FlagLink(AbstractLink):
         self.link_key = link_key
         
     def to_xml(self, parent : ET.Element, blender_material):
-
-        group = [n for n in blender_material.node_tree.nodes if n.bl_idname == "ShaderNodeGroup"]
-        input = group[0].inputs.get(self.link_key)
+        input = self.get_input(blender_material)
         value = False 
         if(input is not None):
             value = input.default_value
 
         flag = ET.SubElement(parent, self.flag_key)
         flag.text = "1" if value else "0"
+
+    def to_blender(self, material_node : ET.Element, blender_material):
+        input = self.get_input(blender_material)
+        subnode = material_node.find(self.flag_key)
+        input.default_value = True if subnode is not None and subnode.text == "1" else False
 
 class FloatLink(AbstractLink): 
     def __init__(self, link_key, flag_key, is_invalid = False, default_value = None):
@@ -99,8 +115,7 @@ class FloatLink(AbstractLink):
         self.link_key = link_key
 
     def to_xml(self, parent : ET.Element, blender_material):
-        group = [n for n in blender_material.node_tree.nodes if n.bl_idname == "ShaderNodeGroup"]
-        input = group[0].inputs.get(self.link_key)
+        input = self.get_input(blender_material)
         value = 0.0
         if(input is not None):
             value = input.default_value
@@ -108,12 +123,24 @@ class FloatLink(AbstractLink):
         flag = ET.SubElement(parent, self.flag_key)
         flag.text = str(round(value, 6))
 
+    def to_blender(self, material_node : ET.Element, blender_material):
+        input = self.get_input(blender_material)
+        subnode = material_node.find(self.flag_key)
+        if subnode is None:
+            input.default_value = 0.0 
+        try:
+            input.default_value = float(subnode.text)
+        except: 
+            input.default_value = self.default_value if self.has_default_value() else 0.0
+
 class ColorLink(AbstractLink): 
     def __init__(self, link_key, flag_key, is_invalid = False, default_value = None):
         super().__init__(default_value, is_invalid)
         self.socket_type = "NodeSocketColor"
         self.flag_key = flag_key
         self.link_key = link_key
+
+        self.color_keys = ["r", "g", "b"]
     
     def to_xml(self, parent : ET.Element, blender_material):
         group = [n for n in blender_material.node_tree.nodes if n.bl_idname == "ShaderNodeGroup"]
@@ -122,19 +149,32 @@ class ColorLink(AbstractLink):
         if(input is not None):
             value = input.default_value
 
-        r = ET.SubElement(parent, self.link_key + ".r")
-        r.text = str(round(value[0], 6))
-        g = ET.SubElement(parent, self.link_key + ".g")
-        g.text = str(round(value[1], 6))
-        b = ET.SubElement(parent, self.link_key +  ".b")
-        b.text = str(round(value[2], 6))
+        for i, val in enumerate(self.color_keys):
+            r = ET.SubElement(parent, self.flag_key + "." + val)
+            r.text = str(round(value[i], 6))
 
+    def to_blender(self, material_node : ET.Element, blender_material):
+        return 
+        
 class AbstractShaderComponent:
     def __init__():
         self.component_properties = {}
         self.links = []
 
-class DefaultShaderFakeComponent(AbstractShaderComponent): 
+class DefaultPropComponent(AbstractShaderComponent): 
+    def __init__(self):
+        self.links = [
+            TextureLink("cMetallic", "METALLIC_TEX_ENABLED", "cModelMetallicTex"),
+            FloatLink("Metalness Factor", "cMetallic"),
+            FloatLink("AO Factor", "cAmbientOcclusion"),
+            FlagLink("TerrainTint", "cUseTerrainTinting"),
+            FlagLink("TerrainGrit", "cUseTerrainGrit"),
+            TextureLink("cSeperateAO", "SEPARATE_AO_TEXTURE", "cSeparateAOTex"),
+            TextureLink("Specular Occlusion", "SPEC_OCCLUSION_TEX_ENABLED", "cModelSpecOcclusionTex"),
+            FlagLink("Specular uses 2nd UV set", "SPEC_OCCLUSION_USE_2ND_UV")
+        ]
+
+class DefaultShaderFakeComponent(AbstractShaderComponent):
     def __init__(self):
         self.links = [
             TextureLink("cMetallic", "METALLIC_TEX_ENABLED", "cModelMetallicTex"),
@@ -155,6 +195,11 @@ class CommonShaderComponent(AbstractShaderComponent):
             FloatLink("Opacity", "cOpacity", default_value=1.0),
             FloatLink("Texture Scroll Speed", "cTexScrollSpeed", default_value=0.0),
             TextureLink("cDyeMask", "DYE_MASK_ENABLED", "cDyeMask"),
+        ]
+
+class AdditionalPBRShaderComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
             TextureLink("cHeight", "HEIGHT_MAP_ENABLED", "cHeightMap"),
             FloatLink("Parallax Scale", "cParallaxScale", default_value=1.0),
             FlagLink("Parallax Mapping", "PARALLAX_MAPPING_ENABLED", default_value=True),
@@ -189,4 +234,12 @@ class GlowShaderComponent(AbstractShaderComponent):
             FlagLink("Enable Glow", "GLOW_ENABLED"),
             ColorLink("cEmissiveColor", "cEmissiveColor", default_value=(2.0, 2.0, 2.0, 1.0)),
             TextureLink("cNightGlow", "NIGHT_GLOW_ENABLED", "cNightGlowMap")
+        ]
+class PropShadowsComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            FlagLink("Linear Shadow Interpolation", "LINEAR_SHADOW_INTERPOLATION_ENABLED"),
+            FloatLink("Shadow Bias", "cModelShadowBias", default_value=0.0),            
+            FlagLink("Exclude from SSR", "EXCLUDE_FROM_SSR_ENABLED"),
+            FlagLink("Late Pre-Depth", "LATE_PRE_DEPTH")
         ]

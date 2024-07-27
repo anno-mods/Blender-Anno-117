@@ -24,7 +24,7 @@ from .material import Material, ClothMaterial
 from .feedback_ui import FeedbackConfigItem, GUIDVariationListItem, FeedbackSequenceListItem
 from . import feedback_enums
 
-from .shaders import default_shader as SHADER
+from .shaders.default_shader import AnnoDefaultShader
 # import numpy as np
 
 def convert_to_glb(fullpath: Path):
@@ -218,7 +218,8 @@ class AnnoObject(ABC):
             if node.find("Materials") is not None:
                 materials_node = node.find("Materials")
                 for material_node in list(materials_node):
-                    material = cls.material_class.from_material_node(material_node)
+                    # hardcode AnnoDefaultShader for now
+                    material = AnnoDefaultShader().to_blender_material(material_node)
                     materials.append(material)
                 node.remove(materials_node)
             cls.apply_materials_to_object(obj, materials)
@@ -296,7 +297,7 @@ class AnnoObject(ABC):
             materials_node = find_or_create(node, "Materials")
             if obj.data and obj.data.materials:
                 for blender_material in obj.data.materials:
-                    SHADER.AnnoDefaultShader().to_xml_node(blender_material = blender_material, parent = materials_node)
+                    AnnoDefaultShader().to_xml_node(blender_material = blender_material, parent = materials_node)
                 
         cls.add_children_from_obj(obj, node, child_map) 
         cls.blender_to_xml_finish(obj, node)
@@ -340,7 +341,7 @@ class AnnoObject(ABC):
         return name
     
     @classmethod
-    def apply_materials_to_object(cls, obj: BlenderObject, materials: List[Optional[Material]]):
+    def apply_materials_to_object(cls, obj: BlenderObject, materials):
         """Apply the materials to the object.
 
         Args:
@@ -377,19 +378,9 @@ class AnnoObject(ABC):
                 continue
             slot = i
             old_material = obj.data.materials[slot]
-            obj.data.materials[slot] = material.as_blender_material()
+            obj.data.materials[slot] = material
             old_material.user_clear()
             bpy.data.materials.remove(old_material)
-        # for i, material in enumerate(materials):
-        #     if not material:
-        #         continue
-        #     if i < len(obj.data.materials):
-        #         old_material = obj.data.materials[i]
-        #         obj.data.materials[i] = material.as_blender_material()
-        #         old_material.user_clear()
-        #         bpy.data.materials.remove(old_material)
-        #     else:
-        #         obj.data.materials.append(material.as_blender_material())
         
 
 
@@ -789,7 +780,7 @@ class Decal(AnnoObject):
     @classmethod
     def apply_materials_to_object(cls, obj: BlenderObject, materials: List[Optional[Material]]):
         for mat in materials:
-            obj.data.materials.append(mat.as_blender_material())
+            obj.data.materials.append(mat)
  
 class Prop(AnnoObject):
     has_transform = True
@@ -862,7 +853,10 @@ class Prop(AnnoObject):
         if imported_obj is None:
             return add_empty_to_scene()
         #materials
-        cls.apply_materials_to_object(imported_obj, [material])
+
+        # todo code all the material bullshit for props
+
+        #cls.apply_materials_to_object(imported_obj, [material])
         cls.prop_obj_blueprints[prop_filename] = imported_obj
         return imported_obj
         

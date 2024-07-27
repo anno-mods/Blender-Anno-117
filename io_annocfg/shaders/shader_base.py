@@ -1,6 +1,6 @@
 import bpy
 import xml.etree.ElementTree as ET
-from .shader_components import AbstractShaderComponent
+from .shader_components import AbstractShaderComponent, AbstractLink
 from ..utils import xml_smart
 
 class AnnoBasicShader: 
@@ -8,12 +8,14 @@ class AnnoBasicShader:
 
         self.links = []
 
+        self.shader_id = "AnnoAbstractShader"
+
         self.material_properties = {
             "ConfigType" : "MATERIAL",
             "Name" : "",
-            "ShaderID" : 8,
+            "ShaderID" : "8",
             "VertexFormat" : "",
-            "NumBonesPerVertex" : 0
+            "NumBonesPerVertex" : "0"
         }
         self.__link_by_key = { }
 
@@ -27,6 +29,10 @@ class AnnoBasicShader:
 
         for link in shaderComponent.links: 
             self.__link_by_key[link.link_key] = link
+
+    def add_link(self, link : AbstractLink):
+        self.links.append(link)
+        self.__link_by_key[link.link_key] = link
 
     def has_link(self, link_key):
         return link_key in self.__link_by_key
@@ -45,6 +51,37 @@ class AnnoBasicShader:
                 continue
             link.to_xml(root, blender_material)
         return root
+
+    def to_blender_material(self, material_node : ET.Element): 
+        
+        name_node = material_node.find("Name")
+        name = "Unnamed Material"
+
+        if name_node is not None: 
+            name = name_node.text
+
+        material = bpy.data.materials.new(name=name)
+        material.use_nodes = True
+
+        node_tree = material.node_tree
+        links = node_tree.links
+        nodes = node_tree.nodes
+
+        shader = self.add_anno_shader(nodes)
+        material.node_tree.nodes.remove(nodes["Principled BSDF"])
+        links.new(nodes["Material Output"].inputs["Surface"], shader.outputs["Shader"])
+
+        for link in self.links:
+            link.to_blender(material_node, material)
+
+        return material
+
+    def add_anno_shader(self, nodes):
+        group = nodes.new(type='ShaderNodeGroup')
+        if not self.shader_id in bpy.data.node_groups:
+            self.create_anno_shader()            
+        group.node_tree = bpy.data.node_groups[self.shader_id]
+        return group
 
     def create_anno_shader(self):
         return None

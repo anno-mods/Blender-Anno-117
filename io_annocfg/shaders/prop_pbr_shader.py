@@ -7,22 +7,23 @@ import os
 from pathlib import Path
 from ..prefs import IO_AnnocfgPreferences
 
-class AnnoDefaultShader(AnnoBasicShader):
+class SimplePBRPropShader(AnnoBasicShader):
 
     def __init__(self):
         super().__init__()
 
-        self.shader_id = "AnnoDefaultShader"
+        self.shader_id = "SimplePBRPropShader"
 
-        self.compose(DefaultShaderFakeComponent())
+        self.compose(DefaultPropComponent())
         self.compose(CommonShaderComponent())
         self.compose(AdditionalPBRShaderComponent())
         self.compose(TerrainAdaptionShaderComponent())
         self.compose(EnvironmentShaderComponent())
         self.compose(GlowShaderComponent())
+        self.add_link(FlagLink("Force Alphablending", "FORCE_ALPHA_BLEND"))
 
         # override default vertexformat
-        self.material_properties["VertexFormat"] = "P4h_N4b_G4b_B4b_T2h"
+        self.material_properties.clear()
 
     def texture_quality_suffix(self):
         return "_"+IO_AnnocfgPreferences.get_texture_quality()
