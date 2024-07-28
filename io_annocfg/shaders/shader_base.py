@@ -43,6 +43,8 @@ class AnnoBasicShader:
     # exports all links we have
     def to_xml_node(self, parent : ET.Element, blender_material) -> ET.Element:
         root = ET.SubElement(parent, "Config")
+        if "Name" in self.material_properties:
+            self.material_properties["Name"] = blender_material.name
         for key, value in self.material_properties.items():
             sub = ET.SubElement(root, key)
             sub.text = str(value)
@@ -57,7 +59,7 @@ class AnnoBasicShader:
         name_node = material_node.find("Name")
         name = "Unnamed Material"
 
-        if name_node is not None: 
+        if name_node is not None and name_node.text is not None: 
             name = name_node.text
 
         material = bpy.data.materials.new(name=name)
@@ -72,7 +74,7 @@ class AnnoBasicShader:
         links.new(nodes["Material Output"].inputs["Surface"], shader.outputs["Shader"])
 
         for link in self.links:
-            link.to_blender(material_node, material)
+            link.to_blender(shader, material_node, material)
 
         return material
 

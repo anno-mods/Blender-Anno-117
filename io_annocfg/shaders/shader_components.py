@@ -1,10 +1,11 @@
 import xml.etree.ElementTree as ET
 import mathutils
-from ..utils import to_data_path
+from ..utils import to_data_path, data_path_to_absolute_path
 import os
 from pathlib import Path
 from ..prefs import IO_AnnocfgPreferences
 import bpy
+import subprocess
 
 def texture_quality_suffix():
     return "_"+IO_AnnocfgPreferences.get_texture_quality()
@@ -26,7 +27,7 @@ class AbstractLink:
     def to_xml(self, parent, blender_material):
         return None
 
-    def to_blender(self, material_node : ET.Element, blender_material):
+    def to_blender(self, shader, material_node : ET.Element, blender_material):
         return 
 
     def get_input(self, blender_material):
@@ -44,16 +45,20 @@ class StaticFakeLink(AbstractLink):
         flag = ET.SubElement(parent, self.flag_key)
         flag.text = self.default_value
 
-    def to_blender(self, material_node : ET.Element, blender_material):
+    def to_blender(self, shader, material_node : ET.Element, blender_material):
         return 
 
 class TextureLink(AbstractLink): 
-    def __init__(self, link_key, flag_key, texture_key, is_invalid = False, default_value = None):
+    def __init__(self, link_key, flag_key, texture_key, is_invalid = False, default_value = None, alpha_link = None):
         super().__init__(default_value, is_invalid)
         self.socket_type = "NodeSocketColor"
         self.flag_key = flag_key 
         self.texture_key = texture_key
         self.link_key = link_key
+        self.alpha_link = alpha_link
+
+    def has_alpha_link(self):
+        return self.alpha_link is not None
 
     def to_xml(self, parent : ET.Element, blender_material):
         flag = ET.SubElement(parent, self.flag_key)
@@ -83,9 +88,87 @@ class TextureLink(AbstractLink):
         tex = ET.SubElement(parent, self.texture_key)
         tex.text = str(texture_path)
 
-    def to_blender(self, material_node : ET.Element, blender_material):
-        return 
+    def to_blender(self, shader, material_node : ET.Element, blender_material):
 
+        flag_xmlnode = material_node.find(self.flag_key)
+        if flag_xmlnode is None:
+            return 
+        # Check if the thing is enabled first
+        if not flag_xmlnode.text == "1":
+            return 
+        
+        texture_xmlnode = material_node.find(self.texture_key)
+        print(texture_xmlnode.text)
+
+        texture_node = blender_material.node_tree.nodes.new('ShaderNodeTexImage')
+
+        texture_path = Path(texture_xmlnode.text)
+        texture = self.get_texture(texture_path)
+
+        if texture is not None: 
+            texture_node.image = texture
+            if "Norm" in self.texture_key or "Metal" in self.texture_key or "Height" in self.texture_key:
+                    texture_node.image.colorspace_settings.name = 'Non-Color'
+
+        texture_node.name = self.texture_key
+        texture_node.label = self.texture_key
+
+        # create link: 
+        blender_material.node_tree.links.new(shader.inputs[self.link_key], texture_node.outputs["Color"])
+
+        if self.has_alpha_link():
+            blender_material.node_tree.links.new(shader.inputs[self.alpha_link], texture_node.outputs["Alpha"])
+
+    def get_texture(self, texture_path: Path):
+        """Tries to find the texture texture_path with ending "_0.png" (quality setting can be changed) in the list of loaded textures.
+        Otherwise loads it. If it is not existing but the corresponding .dds exists, converts it first.
+
+        Args:
+            texture_path (str): f.e. "data/.../texture_diffuse.psd"
+
+        Returns:
+            [type]: The texture or None.
+        """
+        if texture_path == Path(""):
+            return None
+        texture_path = Path(texture_path)
+        texture_path = Path(texture_path.parent, texture_path.stem + texture_quality_suffix()+".dds")
+        png_file = texture_path.with_suffix(".png")
+        fullpath = data_path_to_absolute_path(texture_path)
+        png_fullpath = data_path_to_absolute_path(png_file)
+        image = bpy.data.images.get(str(png_file.name), None)
+        if image is not None:
+            image_path_full = os.path.normpath(bpy.path.abspath(image.filepath, library=image.library))
+            if str(image_path_full) == str(png_fullpath):
+                return image
+        if not png_fullpath.exists():
+            success = self.convert_to_png(fullpath)
+            if not success:
+                print("Failed to convert texture", fullpath)
+                return None
+        image = bpy.data.images.load(str(png_fullpath))
+        return image
+
+    def convert_to_png(self, fullpath: Path) -> bool:
+        """Converts the .dds file to .png. Returns True if successful, False otherwise.
+
+        Args:
+            fullpath (str): .dds file
+
+        Returns:
+            bool: Successful
+        """
+        if not IO_AnnocfgPreferences.get_path_to_texconv().exists():
+            return False
+        if not fullpath.exists():
+            return False
+        try:
+            proc_args = f"\"{IO_AnnocfgPreferences.get_path_to_texconv()}\" -ft PNG -sepalpha -y -o \"{fullpath.parent}\" \"{fullpath}\""
+            subprocess.call(proc_args)
+        except:
+            return False
+        return fullpath.with_suffix(".png").exists()
+      
 class FlagLink(AbstractLink): 
     def __init__(self, link_key, flag_key, is_invalid = False, default_value = None):
         super().__init__(default_value, is_invalid)
@@ -102,7 +185,7 @@ class FlagLink(AbstractLink):
         flag = ET.SubElement(parent, self.flag_key)
         flag.text = "1" if value else "0"
 
-    def to_blender(self, material_node : ET.Element, blender_material):
+    def to_blender(self, shader, material_node : ET.Element, blender_material):
         input = self.get_input(blender_material)
         subnode = material_node.find(self.flag_key)
         input.default_value = True if subnode is not None and subnode.text == "1" else False
@@ -123,7 +206,7 @@ class FloatLink(AbstractLink):
         flag = ET.SubElement(parent, self.flag_key)
         flag.text = str(round(value, 6))
 
-    def to_blender(self, material_node : ET.Element, blender_material):
+    def to_blender(self, shader, material_node : ET.Element, blender_material):
         input = self.get_input(blender_material)
         subnode = material_node.find(self.flag_key)
         if subnode is None:
@@ -143,8 +226,7 @@ class ColorLink(AbstractLink):
         self.color_keys = ["r", "g", "b"]
     
     def to_xml(self, parent : ET.Element, blender_material):
-        group = [n for n in blender_material.node_tree.nodes if n.bl_idname == "ShaderNodeGroup"]
-        input = group[0].inputs.get(self.link_key)
+        input = self.get_input(blender_material)
         value = (0.0, 0.0, 0.0, 0.0)
         if(input is not None):
             value = input.default_value
@@ -153,8 +235,21 @@ class ColorLink(AbstractLink):
             r = ET.SubElement(parent, self.flag_key + "." + val)
             r.text = str(round(value[i], 6))
 
-    def to_blender(self, material_node : ET.Element, blender_material):
-        return 
+    def to_blender(self, shader, material_node : ET.Element, blender_material):
+        input = self.get_input(blender_material)
+
+        color_arr = [0.0, 0.0, 0.0, 1.0]
+
+        for i, val in enumerate(self.color_keys):
+            subnode = material_node.find(self.flag_key + "." + val)
+            if subnode is None:
+                color_arr[i] = 0.0
+            try:
+                color_arr[i] = float(subnode.text)
+            except: 
+                color_arr[i] = self.default_value if self.has_default_value() else 0.0
+
+        input.default_value = tuple(color_arr)
         
 class AbstractShaderComponent:
     def __init__():
@@ -186,9 +281,9 @@ class CommonShaderComponent(AbstractShaderComponent):
     def __init__(self):
         self.links = [
             StaticFakeLink("Common", "Common", "Common"),
-            TextureLink("cDiffuse", "DIFFUSE_ENABLED", "cModelDiffTex"),  
+            TextureLink("cDiffuse", "DIFFUSE_ENABLED", "cModelDiffTex", alpha_link="Alpha"),  
             FloatLink("Alpha", "", is_invalid=True, default_value=1.0),
-            TextureLink("cNormal", "NORMAL_ENABLED", "cModelNormalTex"),
+            TextureLink("cNormal", "NORMAL_ENABLED", "cModelNormalTex", alpha_link="Glossiness"),
             FloatLink("Glossiness", "", is_invalid=True),
             ColorLink("cDiffuseMultiplier", "cDiffuseColor", default_value=(1.0, 1.0, 1.0, 1.0)),
             FloatLink("Gloss Factor", "cGlossinessFactor", default_value=1.0),
