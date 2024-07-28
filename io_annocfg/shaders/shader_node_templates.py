@@ -63,7 +63,7 @@ class ShaderTemplate:
         self.anno_shader.links.new(diffuse.inputs["Fac"], dye_mask.outputs["Val"])
         return dye_mask
 
-    def add_normal(self, normal_key):
+    def add_normal(self, normal_key, add_height = False):
         #Normals
         separate_normal = self.add_shader_node(self.anno_shader, "ShaderNodeSeparateRGB",
                                         position = (1, 2),
@@ -135,22 +135,34 @@ class ShaderTemplate:
                                             "Color" : combine_normal.outputs["Image"],
                                         },
                                     )
-        height_bw = self.add_shader_node(self.anno_shader, "ShaderNodeRGBToBW",
-                                        position = (5, 3),
-                                        inputs = {
-                                            "Color" : self.inputs["cHeight"],
-                                        },
-                                    )
-        bump_map = self.add_shader_node(self.anno_shader, "ShaderNodeBump",
-                                        position = (6, 2),
-                                        default_inputs = {
-                                            0 : 0.5,
-                                        },
-                                        inputs = {
-                                            "Height" : height_bw.outputs["Val"],
-                                            "Normal" : normal_map.outputs["Normal"],
-                                        },
-                                    )
+        bump_map = None
+        if add_height:
+            height_bw = self.add_shader_node(self.anno_shader, "ShaderNodeRGBToBW",
+                                            position = (5, 3),
+                                            inputs = {
+                                                "Color" : self.inputs["cHeight"],
+                                            },
+                                        )
+            bump_map = self.add_shader_node(self.anno_shader, "ShaderNodeBump",
+                                            position = (6, 2),
+                                            default_inputs = {
+                                                0 : 0.5,
+                                            },
+                                            inputs = {
+                                                "Height" : height_bw.outputs["Val"],
+                                                "Normal" : normal_map.outputs["Normal"],
+                                            },
+                                        )
+        else: 
+            bump_map = self.add_shader_node(self.anno_shader, "ShaderNodeBump",
+                                            position = (6, 2),
+                                            default_inputs = {
+                                                0 : 0.5,
+                                            },
+                                            inputs = {
+                                                "Normal" : normal_map.outputs["Normal"],
+                                            },
+                                        )
         self.anno_shader.links.new(self.bdsf.inputs["Normal"], bump_map.outputs["Normal"])
         return bump_map
 

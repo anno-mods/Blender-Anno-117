@@ -25,9 +25,6 @@ class AnnoDefaultShader(AnnoBasicShader):
         # override default vertexformat
         self.material_properties["VertexFormat"] = "P4h_N4b_G4b_B4b_T2h"
 
-    def texture_quality_suffix(self):
-        return "_"+IO_AnnocfgPreferences.get_texture_quality()
-
     def create_anno_shader(self):
         anno_shader = bpy.data.node_groups.new(self.shader_id, 'ShaderNodeTree')
 
@@ -44,7 +41,7 @@ class AnnoDefaultShader(AnnoBasicShader):
         shader_template = ShaderTemplate(anno_shader)
         diff = shader_template.add_diffuse("cDiffuse", "cDiffuseMultiplier")
         shader_template.add_dye(diff)
-        shader_template.add_normal("cNormal")
+        shader_template.add_normal("cNormal", add_height=True)
         shader_template.add_gloss("Glossiness")
         shader_template.add_metallic("cMetallic")
         shader_template.add_emission(diff, "cEmissiveColor", "cNightGlow")

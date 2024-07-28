@@ -48,6 +48,12 @@ class IO_AnnocfgPreferences(AddonPreferences):
         subtype='FILE_PATH',
         default = "C:\\tools\\AnnoFCConverter.exe",
     )
+    path_to_filedb_reader : StringProperty( # type: ignore
+        name = "Path to FileDBReader.exe",
+        description = "Path to the FileDBReader tool",
+        subtype='FILE_PATH',
+        default = "C:\\tools\\FileDBReader.exe",
+    )
     texture_quality : EnumProperty( #type: ignore
         name='Texture Quality',
         description='Determines which texture files will be used (_0.dds, _1.dds, etc). 0 is the highest setting. Only applies to newly imported models.',
@@ -97,6 +103,7 @@ class IO_AnnocfgPreferences(AddonPreferences):
         layout.prop(self, "path_to_rdm4")
         layout.prop(self, "path_to_texconv")
         layout.prop(self, "path_to_fc_converter")
+        layout.prop(self, "path_to_filedb_reader")
         layout.prop(self, "texture_quality")
         layout.prop(self, "mirror_models_bool")
         layout.prop(self, "enable_splines")
@@ -120,6 +127,9 @@ class IO_AnnocfgPreferences(AddonPreferences):
     @classmethod
     def get_path_to_fc_converter(cls):
         return Path(bpy.context.preferences.addons[__package__].preferences.path_to_fc_converter)
+    @classmethod
+    def get_path_to_filedb_reader(cls):
+        return Path(bpy.context.preferences.addons[__package__].preferences.path_to_filedb_reader)
     @classmethod
     def get_texture_quality(cls):
         return bpy.context.preferences.addons[__package__].preferences.texture_quality

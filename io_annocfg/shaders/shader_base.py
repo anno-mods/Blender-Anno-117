@@ -82,3 +82,6 @@ class AnnoBasicShader:
 
     def create_anno_shader(self):
         return None
+
+    def texture_quality_suffix(self):
+        return "_"+IO_AnnocfgPreferences.get_texture_quality()

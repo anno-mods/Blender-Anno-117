@@ -48,37 +48,24 @@ class StaticFakeLink(AbstractLink):
     def to_blender(self, shader, material_node : ET.Element, blender_material):
         return 
 
-class TextureLink(AbstractLink): 
-    def __init__(self, link_key, flag_key, texture_key, is_invalid = False, default_value = None, alpha_link = None):
+class FlaglessTextureLink(AbstractLink):
+    def __init__(self, link_key, texture_key, is_invalid = False, default_value = None, alpha_link = None):
         super().__init__(default_value, is_invalid)
         self.socket_type = "NodeSocketColor"
-        self.flag_key = flag_key 
         self.texture_key = texture_key
         self.link_key = link_key
         self.alpha_link = alpha_link
-
+    
     def has_alpha_link(self):
         return self.alpha_link is not None
 
     def to_xml(self, parent : ET.Element, blender_material):
-        flag = ET.SubElement(parent, self.flag_key)
-
         # get links
         links = blender_material.node_tree.links 
         # there should only ever be one link where the key is equal to the socketname.
         link = [l for l in links if self.link_key == l.to_socket.name]
-        if len(link) <= 0:
-            flag.text = "0"
-            return 
         
         texture_node = link[0].from_node
-        
-        if not texture_node.image:
-            flag.text = "0"
-            return 
-
-        flag.text = "1"
-
         filepath_full = os.path.realpath(bpy.path.abspath(texture_node.image.filepath, library=texture_node.image.library))
         texture_path = to_data_path(filepath_full)
         #Rename "data/.../some_diff_0.png" to "data/.../some_diff.psd"
@@ -88,17 +75,10 @@ class TextureLink(AbstractLink):
         tex = ET.SubElement(parent, self.texture_key)
         tex.text = str(texture_path)
 
-    def to_blender(self, shader, material_node : ET.Element, blender_material):
-
-        flag_xmlnode = material_node.find(self.flag_key)
-        if flag_xmlnode is None:
-            return 
-        # Check if the thing is enabled first
-        if not flag_xmlnode.text == "1":
-            return 
-        
+    def to_blender(self, shader, material_node : ET.Element, blender_material):      
         texture_xmlnode = material_node.find(self.texture_key)
-        print(texture_xmlnode.text)
+        if texture_xmlnode is None:
+            return
 
         texture_node = blender_material.node_tree.nodes.new('ShaderNodeTexImage')
 
@@ -169,6 +149,26 @@ class TextureLink(AbstractLink):
             return False
         return fullpath.with_suffix(".png").exists()
       
+
+class TextureLink(FlaglessTextureLink): 
+    def __init__(self, link_key, flag_key, texture_key, is_invalid = False, default_value = None, alpha_link = None):
+        super().__init__(link_key, texture_key, is_invalid, default_value, alpha_link)
+        self.flag_key = flag_key 
+
+    def to_xml(self, parent : ET.Element, blender_material):
+        super().to_xml(parent, blender_material)
+
+        flag = ET.SubElement(parent, self.flag_key)
+
+        # export a flag that states whether the material is connected
+        tex_node = parent.find(self.texture_key)
+
+        # if the texture is not there, export 0
+        if ((tex_node is None) or (tex_node.text is None) or (tex_node.text == "")):
+            flag.text = "0"
+            return
+        flag.text = "1"
+
 class FlagLink(AbstractLink): 
     def __init__(self, link_key, flag_key, is_invalid = False, default_value = None):
         super().__init__(default_value, is_invalid)
@@ -240,14 +240,22 @@ class ColorLink(AbstractLink):
 
         color_arr = [0.0, 0.0, 0.0, 1.0]
 
+        issue = False
+
         for i, val in enumerate(self.color_keys):
             subnode = material_node.find(self.flag_key + "." + val)
+            if issue:
+                continue
             if subnode is None:
                 color_arr[i] = 0.0
             try:
                 color_arr[i] = float(subnode.text)
             except: 
-                color_arr[i] = self.default_value if self.has_default_value() else 0.0
+                issue = True
+                color_arr = self.default_value if self.has_default_value() else [0.0, 0.0, 0.0, 1.0]
+
+        print(self.link_key + " | " + self.flag_key)
+        print(color_arr)
 
         input.default_value = tuple(color_arr)
         
@@ -337,4 +345,155 @@ class PropShadowsComponent(AbstractShaderComponent):
             FloatLink("Shadow Bias", "cModelShadowBias", default_value=0.0),            
             FlagLink("Exclude from SSR", "EXCLUDE_FROM_SSR_ENABLED"),
             FlagLink("Late Pre-Depth", "LATE_PRE_DEPTH")
+        ]
+
+class PropBasicDiffuseComponent(AbstractShaderComponent): 
+    def __init__(self):
+        self.links = [
+            FlaglessTextureLink("cDiffuse", "cPropDiffuseTex", alpha_link="Alpha"),
+            FloatLink("Alpha", "", is_invalid=True, default_value=1.0),
+            ColorLink("cDiffuseMultiplier", "cDiffuseColor", default_value=(1.0, 1.0, 1.0, 1.0)),            
+            FloatLink("AlphaRef", "cAlphaRef"),
+        ]
+
+class PropBasicDiffNormComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            FlaglessTextureLink("cDiffuse", "cPropDiffuseTex", alpha_link="Alpha"),
+            FloatLink("Alpha", "", is_invalid=True, default_value=1.0),
+            FlaglessTextureLink("cNormal", "cPropNormalTex", alpha_link="Glossiness"),
+            FloatLink("Glossiness", "", is_invalid=True),
+            ColorLink("cDiffuseMultiplier", "cDiffuseColor", default_value=(1.0, 1.0, 1.0, 1.0)),
+        ]
+
+class PropPlantDiffNormComponent(AbstractShaderComponent): 
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("Common", "Common", "Common"),
+            TextureLink("cDiffuse", "DIFFUSE_ENABLED", "cPropDiffuseTex", alpha_link="Alpha"),  
+            FloatLink("Alpha", "", is_invalid=True, default_value=1.0),
+            TextureLink("cNormal", "NORMAL_ENABLED", "cPropNormalTex", alpha_link="Glossiness"),
+            FloatLink("Glossiness", "", is_invalid=True),
+            ColorLink("cDiffuseMultiplier", "cDiffuseColor", default_value=(1.0, 1.0, 1.0, 1.0)),
+        ]
+
+class PropDecalComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [          
+            ColorLink("cSpecular", "cSpecularColor", default_value=(1.0, 1.0, 1.0, 1.0)),
+            FloatLink("cOpacity", "cOpacity", default_value=1.0),
+            FloatLink("Glossiness Factor", "cGlossinessFactor", default_value=1.0),
+            FlagLink("Terrain Tint", "cUseTerrainTinting"),
+            FlagLink("Terrain Grit", "cUseTerrainGrit"),
+            FlagLink("Align on Water", "cAlignOnWater"),
+            FloatLink("Depth Bias", "cDepthBias", default_value=1.0)
+        ]
+
+class TerrainMaterialComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("TerrainMaterial", "TerrainMaterial", "TerrainMaterial"),
+            FlagLink("Enable Terrain Material", "ENABLE_TERRAIN_MATERIAL"),
+            FlaglessTextureLink("cTerrainDiff", "cPropTerrainDiffuseTex"),
+            FlaglessTextureLink("cTerrainNorm", "cPropTerrainNormalTex"),
+            FloatLink("TerrainTex Repeat", "cTerrainTexRepetition", default_value=4.0),
+            FlagLink("Mix Terrain With Diff", "cMixTerrainTexWithDiffuse"),
+            FloatLink("Mix Contrast", "cDiffuseTerrainMixContrast"),
+            FlagLink("Grit Effect", "cGritEffect"),
+            FlagLink("Grit Slope Threshold", "cGritEffectSlopeThreshold"),
+        ]
+
+class TerrainIntegrationComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("TerrainIntegration", "TerrainIntegration", "TerrainIntegration"),
+            FlagLink("Aligh to Terrain Normal", "cAlignToTerrainNormal"),
+            FlagLink("Terrain Tint", "cUseTerrainTinting"),
+            FlagLink("Terrain Grit", "cUseTerrainGrit"),
+            FloatLink("Grit Skirt Height", "cGritSkirtHeight"),
+            FlagLink("Adapt to Terrain Normal", "cAdaptToTerrainNormal"),
+            FloatLink("Normal Skirt Height", "cNormalSkirtHeight"),
+        ]
+
+class GrassAdditionalComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            FlagLink("Disable Alpha TO Coverage", "DISABLE_ALPHA_TO_COVERAGE"),
+            FloatLink("Trunk Wind Deflection", "cTrunkWindDeflection"),
+            FloatLink("Leaf Wind Deflection", "cLeafWindDeflection"),
+            StaticFakeLink("TerrainAdaption", "TerrainIntegration", ""),
+            FlagLink("Aligh to Terrain Normal", "cAlignToTerrainNormal"),
+            FlagLink("Terrain Tint", "cUseTerrainTinting"),
+            FloatLink("Terrain Tint Intensity", "cTerrainTintIntensity"),
+            FlagLink("Use Terrain Grit", "cUseTerrainGrit"),
+            FlagLink("Scale by Vertex Luminance", "SCALE_BY_VERTEX_LUMINANCE"),
+        ]
+
+class PropTerrainAdaptionComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("TerrainAdaption", "TerrainIntegration", ""),
+            FlagLink("Aligh to Terrain Normal", "cAlignToTerrainNormal"),
+        ]
+
+class PropBackfaceComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("BackFace", "BackFace", "BackFace"),
+            FlagLink("Double Sided", "DOUBLE_SIDED"),
+        ]
+
+class PropTransparencyComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("Transparency", "Transparency", "Transparency"),
+            FloatLink("Alpha Ref", "cAlphaRef"),
+            FloatLink("Shadow Alpha Ref", "cShadowAlphaRef"),
+        ]
+
+class PropWindComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("Wind", "Wind", "Wind"),
+            FlagLink("Enable Wind", "FARM_FIELD_WIND"),
+            FloatLink("Wind Color Boost", "cWindColorBoost")
+        ]
+
+class PropTiledTintComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("TiledTint", "TiledTint", "TiledTint"),
+            FlagLink("Enable Tiled Tint", "PROP_TINT_ENABLED"),
+            FloatLink("TiledTint Tiling", "cPropTintTiling", default_value=1.0),
+            FloatLink("TiledTint Intensity", "cPropTintIntensity", default_value=1.0)
+        ]
+
+class PropShadowNoiseComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("ShadowNoise", "ShadowNoise", "ShadowNoise"),
+            FlagLink("Enable Shadownoise", "ENABLE_SHADOW_NOISE"),
+            FloatLink("Noise", "cShadowNoise"),            
+            FloatLink("NearNoise", "cShadowNoiseNear"),
+            FloatLink("NearDistanceNoise", "cShadowNoiseNearDistance", default_value=10.0),
+            FloatLink("Noise Size", "cShadowNoiseSize", default_value=1.0),
+            FloatLink("Density", "cShadowDensity", default_value=1.0),
+        ]
+
+class PropShinySpotsComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("ShinySpots", "ShinySpots", "ShinySpots"),
+            FloatLink("Sunlit Spot", "cSunLitSpot"),            
+            FloatLink("Sunlit Spot Size", "cSunLitSpotSize", default_value=4.0),
+            FloatLink("Sunreflect Spot", "cSunReflectSpot"),
+            FloatLink("Sunreflect Spot Size", "cShadowNoiseSize", default_value=4.0)
+        ]
+
+class PropYetAnotherTerrainTintComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            FlagLink("Use Terrain Tint", "cUseTerrainTinting"),
+            FlagLink("Boost Terrain Tint", "cBoostTerrainTinting"),
+            FloatLink("Tint Intensity", "cTerrainTintIntensity", default_value=1.0)
         ]

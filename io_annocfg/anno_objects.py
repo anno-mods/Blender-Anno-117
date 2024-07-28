@@ -25,6 +25,7 @@ from .feedback_ui import FeedbackConfigItem, GUIDVariationListItem, FeedbackSequ
 from . import feedback_enums
 
 from .shaders.default_shader import AnnoDefaultShader
+from .shaders.prop_pbr_shader import SimplePBRPropShader
 # import numpy as np
 
 def convert_to_glb(fullpath: Path):
@@ -778,7 +779,7 @@ class Decal(AnnoObject):
         return obj   
     
     @classmethod
-    def apply_materials_to_object(cls, obj: BlenderObject, materials: List[Optional[Material]]):
+    def apply_materials_to_object(cls, obj: BlenderObject, materials):
         for mat in materials:
             obj.data.materials.append(mat)
  
@@ -799,6 +800,9 @@ class Prop(AnnoObject):
     enforce_equal_scale = False #scale.x, .y and .z must be equal
     has_materials = False
 
+    shader_classes = {
+        "SimplePBR" : SimplePBRPropShader()
+    }
     
     prop_data_by_filename: Dict[str, Tuple[Optional[str], Optional[Material]]] = {} #avoids opening the same .prp file multiple times
     
@@ -814,26 +818,49 @@ class Prop(AnnoObject):
         Returns:
             Tuple[str, Material]: Path to the .rdm file of the prop and its material.
         """
+
         if prop_filename in cls.prop_data_by_filename:
             return cls.prop_data_by_filename[prop_filename]
+
         prop_file = data_path_to_absolute_path(prop_filename)
         if not prop_file.exists() or prop_file.suffix != ".prp":
             return (None, None)
-        with open(prop_file) as file:
-            content = file.read()
-            mesh_file_name = re.findall("<MeshFileName>(.*?)<", content, re.I)[0]
-            diff_path = get_first_or_none(re.findall("<cModelDiffTex>(.*?)<", content, re.I))
-            #Some props (trees) do seem to have a cProp texture. Let's just deal with that.
-            if diff_path is None:
-                diff_path = get_first_or_none(re.findall("<cPropDiffuseTex>(.*?)<", content, re.I))
-            norm_path = get_first_or_none(re.findall("<cModelNormalTex>(.*?)<", content, re.I))
-            if norm_path is None:
-                norm_path = get_first_or_none(re.findall("<cPropNormalTex>(.*?)<", content, re.I))
-            metallic_path = get_first_or_none(re.findall("<cModelMetallicTex>(.*?)<", content, re.I))
-            if metallic_path is None:
-                metallic_path = get_first_or_none(re.findall("<cPropMetallicTex>(.*?)<", content, re.I))
-            material = Material.from_filepaths(prop_filename, diff_path, norm_path, metallic_path)
-        prop_data = (mesh_file_name, material)
+
+        print(prop_file)
+
+        proc_args = f"\"{IO_AnnocfgPreferences.get_path_to_filedb_reader()}\" fctohex -d -y -f \"{prop_file}\""
+        subprocess.call(proc_args)
+
+        xml_path = prop_file.with_suffix(".xml")
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+
+        # get prop node
+        prop_node = root.find("Prop")
+        if not prop_node: 
+            print("Could not load Prop: " + prop_filename)
+            return (None, None)
+
+        # todo: determine type of material based on PropType 
+        type = prop_node.find("Type").text
+        mat = SimplePBRPropShader()
+        if type in cls.shader_classes:
+            mat = cls.shader_classes[type]
+
+        # get mesh_file_name
+        mesh_file_name = prop_node.find("MeshFileName").text
+        print(mesh_file_name)
+
+        # get materials
+        materials = prop_node.find("Materials")
+
+        mat_list = []
+
+        for material_node in materials:
+            blender_mat = mat.to_blender_material(material_node)
+            mat_list.append(blender_mat)
+
+        prop_data = (mesh_file_name, mat_list)
         cls.prop_data_by_filename[prop_filename] = prop_data
         return prop_data
     
@@ -848,15 +875,13 @@ class Prop(AnnoObject):
                 return prop_obj
             except:
                 pass
-        model_filename, material = cls.get_prop_data(prop_filename)
+        model_filename, materials = cls.get_prop_data(prop_filename)
         imported_obj = import_model_to_scene(model_filename)
         if imported_obj is None:
             return add_empty_to_scene()
         #materials
 
-        # todo code all the material bullshit for props
-
-        #cls.apply_materials_to_object(imported_obj, [material])
+        cls.apply_materials_to_object(imported_obj, materials)
         cls.prop_obj_blueprints[prop_filename] = imported_obj
         return imported_obj
         

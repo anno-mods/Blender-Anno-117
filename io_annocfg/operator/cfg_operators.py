@@ -8,6 +8,12 @@ from bpy_extras.object_utils import AddObjectHelper
 from ..anno_objects import MainFile, Model, Propcontainer, Prop, Cloth, Decal, SubFile, ClothMaterial
 from ..material import Material
 from ..shaders.default_shader import AnnoDefaultShader
+from ..shaders.prop_decal_shader import DecalPropShader
+from ..shaders.prop_decaldetail_shader import DecalDetailPropShader
+from ..shaders.prop_pbr_shader import SimplePBRPropShader
+from ..shaders.prop_terrain_shader import TerrainPropShader
+from ..shaders.prop_plant_shader import PlantPropShader
+from ..shaders.prop_grass_shader import GrassPropShader
 
 class generic_cfg_object(Operator, AddObjectHelper):
     bl_idname = "mesh.add_anno_cfgobj"
@@ -124,7 +130,37 @@ class shader_menu(bpy.types.Menu):
 
         layout.operator(
             shader_default.bl_idname,
-            text="Default (8)",
+            text="Model | Default (8)",
+            icon='FILE_BLANK'
+        )        
+        layout.operator(
+            shader_prop_simple_pbr.bl_idname,
+            text="Prop | SimplePBR",
+            icon='FILE_BLANK'
+        ) 
+        layout.operator(
+            shader_prop_decal.bl_idname,
+            text="Prop | Decal",
+            icon='FILE_BLANK'
+        ) 
+        layout.operator(
+            shader_prop_decal_detail.bl_idname,
+            text="Prop | Decal Detail",
+            icon='FILE_BLANK'
+        )
+        layout.operator(
+            shader_prop_terrain.bl_idname,
+            text="Prop | Terrain",
+            icon='FILE_BLANK'
+        )
+        layout.operator(
+            shader_prop_grass.bl_idname,
+            text="Prop | Grass",
+            icon='FILE_BLANK'
+        )
+        layout.operator(
+            shader_prop_plant.bl_idname,
+            text="Prop | Plant",
             icon='FILE_BLANK'
         )
 
@@ -154,6 +190,90 @@ class shader_default(bpy.types.Operator):
         my_group = AnnoDefaultShader().add_anno_shader(node_tree.nodes)
         return {"FINISHED"}
 
+class shader_prop_simple_pbr(bpy.types.Operator):
+    bl_idname = "node.add_anno_shader_prop_simple_pbr"
+    bl_label  = "Add Prop:SimplePBR Anno Shader"
+
+    @classmethod
+    def poll(cls, context):
+        space = context.space_data
+        return space.type == "NODE_EDITOR"
+
+    def execute(self, context):
+        node_tree = context.object.active_material.node_tree
+        my_group = SimplePBRPropShader().add_anno_shader(node_tree.nodes)
+        return {"FINISHED"}
+
+class shader_prop_decal(bpy.types.Operator):
+    bl_idname = "node.add_anno_shader_prop_decal"
+    bl_label  = "Add Prop:Decal Anno Shader"
+
+    @classmethod
+    def poll(cls, context):
+        space = context.space_data
+        return space.type == "NODE_EDITOR"
+
+    def execute(self, context):
+        node_tree = context.object.active_material.node_tree
+        my_group = DecalPropShader().add_anno_shader(node_tree.nodes)
+        return {"FINISHED"}
+
+class shader_prop_decal_detail(bpy.types.Operator):
+    bl_idname = "node.add_anno_shader_prop_decal_detail"
+    bl_label  = "Add Prop:DecalDetail Anno Shader"
+
+    @classmethod
+    def poll(cls, context):
+        space = context.space_data
+        return space.type == "NODE_EDITOR"
+
+    def execute(self, context):
+        node_tree = context.object.active_material.node_tree
+        my_group = DecalDetailPropShader().add_anno_shader(node_tree.nodes)
+        return {"FINISHED"}
+
+class shader_prop_terrain(bpy.types.Operator):
+    bl_idname = "node.add_anno_shader_prop_terrain"
+    bl_label  = "Add Prop:DecalDetail Anno Shader"
+
+    @classmethod
+    def poll(cls, context):
+        space = context.space_data
+        return space.type == "NODE_EDITOR"
+
+    def execute(self, context):
+        node_tree = context.object.active_material.node_tree
+        my_group = TerrainPropShader().add_anno_shader(node_tree.nodes)
+        return {"FINISHED"}
+
+class shader_prop_grass(bpy.types.Operator):
+    bl_idname = "node.add_anno_shader_prop_grass"
+    bl_label  = "Add Prop:DecalDetail Anno Shader"
+
+    @classmethod
+    def poll(cls, context):
+        space = context.space_data
+        return space.type == "NODE_EDITOR"
+
+    def execute(self, context):
+        node_tree = context.object.active_material.node_tree
+        my_group = GrassPropShader().add_anno_shader(node_tree.nodes)
+        return {"FINISHED"}
+
+class shader_prop_plant(bpy.types.Operator):
+    bl_idname = "node.add_anno_shader_prop_plant"
+    bl_label  = "Add Prop:DecalDetail Anno Shader"
+
+    @classmethod
+    def poll(cls, context):
+        space = context.space_data
+        return space.type == "NODE_EDITOR"
+
+    def execute(self, context):
+        node_tree = context.object.active_material.node_tree
+        my_group = PlantPropShader().add_anno_shader(node_tree.nodes)
+        return {"FINISHED"}
+
 
 # todo (Taube) this is broken, reimplement this operator for actual cloth when shaders are rewritten.
 class shader_cloth(bpy.types.Operator):
@@ -181,6 +301,12 @@ classes = (
     cfg_menu,
     shader_menu,
     shader_default,
+    shader_prop_simple_pbr,
+    shader_prop_decal_detail,
+    shader_prop_decal,
+    shader_prop_terrain,
+    shader_prop_grass,
+    shader_prop_plant,
     shader_cloth
 )
 
