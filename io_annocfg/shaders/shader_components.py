@@ -6,6 +6,9 @@ from pathlib import Path
 from ..prefs import IO_AnnocfgPreferences
 import bpy
 import subprocess
+import logging 
+
+log = logging.getLogger("ShaderComponents")
 
 def texture_quality_suffix():
     return "_"+IO_AnnocfgPreferences.get_texture_quality()
@@ -64,6 +67,10 @@ class FlaglessTextureLink(AbstractLink):
         links = blender_material.node_tree.links 
         # there should only ever be one link where the key is equal to the socketname.
         link = [l for l in links if self.link_key == l.to_socket.name]
+
+        if len(link) == 0:
+            log.warning(f"Missing texture link at {self.texture_key}, linked to {self.link_key}")
+            return
         
         texture_node = link[0].from_node
         filepath_full = os.path.realpath(bpy.path.abspath(texture_node.image.filepath, library=texture_node.image.library))
@@ -295,9 +302,14 @@ class CommonShaderComponent(AbstractShaderComponent):
             FloatLink("Glossiness", "", is_invalid=True),
             ColorLink("cDiffuseMultiplier", "cDiffuseColor", default_value=(1.0, 1.0, 1.0, 1.0)),
             FloatLink("Gloss Factor", "cGlossinessFactor", default_value=1.0),
-            FloatLink("Opacity", "cOpacity", default_value=1.0),
+            FloatLink("Opacity", "cOpacity", default_value=1.0)
+        ]
+
+class DyeMaskTexScrollShaderComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
             FloatLink("Texture Scroll Speed", "cTexScrollSpeed", default_value=0.0),
-            TextureLink("cDyeMask", "DYE_MASK_ENABLED", "cDyeMask"),
+            TextureLink("cDyeMask", "DYE_MASK_ENABLED", "cDyeMask")
         ]
 
 class AdditionalPBRShaderComponent(AbstractShaderComponent):
@@ -496,4 +508,108 @@ class PropYetAnotherTerrainTintComponent(AbstractShaderComponent):
             FlagLink("Use Terrain Tint", "cUseTerrainTinting"),
             FlagLink("Boost Terrain Tint", "cBoostTerrainTinting"),
             FloatLink("Tint Intensity", "cTerrainTintIntensity", default_value=1.0)
+        ]
+
+class RimEffectComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("RimEffect", "RimEffect", "RimEffect"),
+            ColorLink("Rim Color", "cRimColor"),
+            FloatLink("Rim Intensity", "cRimIntensity")
+        ]
+
+class RipplesComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("Ripples", "Ripples", "Ripples"),
+            TextureLink("RipplesTex", "RIPPLES_ENABLED", "cClothRippleTex"),
+            FloatLink("Tiling", "cRippleTiling"),
+            FloatLink("Speed", "cRippleSpeed"),
+            FloatLink("Normal Intensity", "cRippleNormalIntensity")
+        ]
+
+class MiniTerrainAdapion(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("TerrainAdaption", "TerrainAdaption", "TerrainAdaption"),
+            FlagLink("Adapt to Terrain", "ADJUST_TO_TERRAIN_HEIGHT")
+        ]
+
+class AtlasComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("Atlas", "Atlas", "Atlas"),
+            FlagLink("Enable Logo Atlas", "LOGO_ATLAS_ENABLED"),
+            FlagLink("Invert Logo Color", "INVERSE_LOGO_COLORING"),
+        ]
+
+class ClothShaderComponent(AbstractShaderComponent): 
+    def __init__(self):
+        self.links = [
+            TextureLink("cDiffuse", "DIFFUSE_ENABLED", "cClothDiffuseTex", alpha_link="Alpha"),  
+            FloatLink("Alpha", "", is_invalid=True, default_value=1.0),
+            TextureLink("cNormal", "NORMAL_ENABLED", "cClothNormalTex", alpha_link="Glossiness"),
+            FloatLink("Glossiness", "", is_invalid=True),
+            ColorLink("cDiffuseMultiplier", "cDiffuseColor", default_value=(1.0, 1.0, 1.0, 1.0)),
+            ColorLink("cSpecular", "cSpecularColor", default_value=(1.0, 1.0, 1.0, 1.0)),
+            FloatLink("Gloss Factor", "cGlossinessFactor", default_value=1.0),
+            FloatLink("Opacity", "cOpacity", default_value=1.0),
+            FloatLink("AlphaRef", "cAlphaRef"),
+            TextureLink("cDyeMask", "DYE_MASK_ENABLED", "cClothDyeMask", alpha_link="Glossiness"),
+        ]
+
+class CutoutComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            FlagLink("Cutout Terrain", "CUT_OUT_TERRAIN"),
+            FlagLink("Cutout Water", "CUT_OUT_WATER")
+        ]
+
+class SimpleColorComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            ColorLink("Color", "cDiffuseColor"),
+            FloatLink("Glossiness", "cGlossinessFactor"),
+            FloatLink("Metallic", "cMetallicLowPoly"),
+            FloatLink("Glow", "cGlow"),
+            FlagLink("Adjust to Terrain Height", "ADJUST_TO_TERRAIN_HEIGHT"),
+            FlagLink("Disable Revive Distance", "DisableReviveDistance"),
+        ]
+
+class LiquidStandardComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            FloatLink("Normal Intensity", "cFlowNormalIntensity"),
+            FloatLink("Scaling", "cWaterTexScale"),
+            FloatLink("Distortion", "cWaterDistortion"),
+            FloatLink("Depth Fade", "cWaterDepthFade"),
+            FloatLink("Depth", "cWaterDepth"),
+            FloatLink("Reflectivity", "cBaseReflectivity"),
+            FloatLink("Foam", "cWaterFoam"),
+            FlagLink("Vertex Colored Foam", "VERTEX_COLOR_FOAM")
+        ]
+
+class FlowMapComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("FlowMap", "FlowMap", "FlowMap"),
+            TextureLink("Flow Tex", "FLOW_MAP_ENABLED", "cWaterFlowTex"),
+            FloatLink("Flow Speed", "cFlowSpeed")
+        ]
+
+class OceanWaveComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("OceanWaveTexture", "OceanWaveTexture", "OceanWaveTexture"),
+            FlagLink("Use Small Waves", "USE_SMALL_WAVE_TEXTURE"),
+            FloatLink("Small Waves Scale", "cSmallWaveTexScale")
+        ]
+
+class DetailMapComponent(AbstractShaderComponent):
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("DetailMap", "DetailMap", "DetailMap"),
+            FlagLink("Enable Detail Map", "DETAIL_MAP_ENABLED"),
+            FlaglessTextureLink("Water Detail", "cWaterDetailTex"),
+            FlaglessTextureLink("Water Detail Normals", "cWaterDetailNormTex"),
         ]

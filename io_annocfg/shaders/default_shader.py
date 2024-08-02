@@ -17,6 +17,7 @@ class AnnoDefaultShader(AnnoBasicShader):
 
         self.compose(DefaultShaderFakeComponent())
         self.compose(CommonShaderComponent())
+        self.compose(DyeMaskTexScrollShaderComponent())
         self.compose(AdditionalPBRShaderComponent())
         self.compose(TerrainAdaptionShaderComponent())
         self.compose(EnvironmentShaderComponent())
@@ -26,17 +27,7 @@ class AnnoDefaultShader(AnnoBasicShader):
         self.material_properties["VertexFormat"] = "P4h_N4b_G4b_B4b_T2h"
 
     def create_anno_shader(self):
-        anno_shader = bpy.data.node_groups.new(self.shader_id, 'ShaderNodeTree')
-
-        for l in self.links: 
-            if not l.has_socket():
-                continue
-
-            socket = anno_shader.interface.new_socket(socket_type = l.socket_type, name = l.link_key, in_out = 'INPUT')
-            if l.has_default_value():
-                socket.default_value = l.default_value    
-        
-        anno_shader.interface.new_socket(socket_type = "NodeSocketShader", name = "Shader", in_out='OUTPUT')
+        anno_shader = self.setup_empty_shader()
                 
         shader_template = ShaderTemplate(anno_shader)
         diff = shader_template.add_diffuse("cDiffuse", "cDiffuseMultiplier")

@@ -25,7 +25,18 @@ from .feedback_ui import FeedbackConfigItem, GUIDVariationListItem, FeedbackSequ
 from . import feedback_enums
 
 from .shaders.default_shader import AnnoDefaultShader
+from .shaders.cloth_shader import ClothShader
+from .shaders.decal_shader import DecalShader
+from .shaders.cutout_shader import CutoutShader
+from .shaders.mockup_shader import MockupShader
+from .shaders.prop_decal_shader import DecalPropShader
+from .shaders.prop_decaldetail_shader import DecalDetailPropShader
 from .shaders.prop_pbr_shader import SimplePBRPropShader
+from .shaders.prop_terrain_shader import TerrainPropShader
+from .shaders.prop_plant_shader import PlantPropShader
+from .shaders.prop_grass_shader import GrassPropShader
+from .shaders.destruct_shader import DestructShader
+from .shaders.water_shader import LiquidShader
 # import numpy as np
 
 def convert_to_glb(fullpath: Path):
@@ -140,7 +151,28 @@ class AnnoObject(ABC):
     #f.e. Animations->Type,  <Animations><A></A><A></A><A></A></Animations>
     child_anno_object_types_without_container: Dict[str, type] = {}
     #f.e. A->Type, <A></A><A></A><A></A>
-    
+
+    default_shader = AnnoDefaultShader()
+
+    model_shaders_by_id = {
+        "8" : AnnoDefaultShader(),
+        "0" : ClothShader(),
+        "1" : DecalShader(),
+        "5" : CutoutShader(),
+        "18" : MockupShader(),
+        "6" : DestructShader(),
+        "7" : LiquidShader()
+    }
+
+    model_shaders_by_bl_label = {
+        "AnnoClothShader" : ClothShader(),
+        "AnnoDefaultShader" : AnnoDefaultShader(),
+        "AnnoDecalShader" : DecalShader(),
+        "AnnoCutoutShader" : CutoutShader(),
+        "MockupShader" : MockupShader(),
+        "AnnoDestructShader" : DestructShader(),
+        "AnnoLiquidShader" : LiquidShader()
+    }
 
     
     def __init__(self):
@@ -220,7 +252,13 @@ class AnnoObject(ABC):
                 materials_node = node.find("Materials")
                 for material_node in list(materials_node):
                     # hardcode AnnoDefaultShader for now
-                    material = AnnoDefaultShader().to_blender_material(material_node)
+
+                    shader_id = material_node.find("ShaderID").text
+                    shader = cls.default_shader
+                    if shader_id in cls.model_shaders_by_id:
+                        shader = cls.model_shaders_by_id[shader_id]
+
+                    material = shader.to_blender_material(material_node)
                     materials.append(material)
                 node.remove(materials_node)
             cls.apply_materials_to_object(obj, materials)
@@ -298,7 +336,23 @@ class AnnoObject(ABC):
             materials_node = find_or_create(node, "Materials")
             if obj.data and obj.data.materials:
                 for blender_material in obj.data.materials:
-                    AnnoDefaultShader().to_xml_node(blender_material = blender_material, parent = materials_node)
+                    output_node = blender_material.node_tree.nodes.get("Material Output")
+                    surface_socket = output_node.inputs.get("Surface")
+                    connected = [l for l in blender_material.node_tree.links if l.to_socket == surface_socket]
+
+                    if len(connected) == 0:
+                        config = ET.SubElement(materials_node, "Config") 
+                        continue
+
+                    from_node = connected[0].from_node
+                    shader_id = from_node.name
+                    print(shader_id)
+
+                    shader = cls.default_shader
+                    if shader_id in cls.model_shaders_by_bl_label:
+                        shader = cls.model_shaders_by_bl_label[shader_id]
+                    
+                    shader.to_xml_node(blender_material = blender_material, parent = materials_node)
                 
         cls.add_children_from_obj(obj, node, child_map) 
         cls.blender_to_xml_finish(obj, node)
@@ -800,8 +854,14 @@ class Prop(AnnoObject):
     enforce_equal_scale = False #scale.x, .y and .z must be equal
     has_materials = False
 
+    default_shader = SimplePBRPropShader()
     shader_classes = {
-        "SimplePBR" : SimplePBRPropShader()
+        "SimplePBR" : SimplePBRPropShader(),
+        "Grass" : GrassPropShader(),
+        "Decal" : DecalPropShader(),
+        "Decal Detail" : DecalDetailPropShader(),
+        "Terrain" : TerrainPropShader(),
+        "Plant" : PlantPropShader()
     }
     
     prop_data_by_filename: Dict[str, Tuple[Optional[str], Optional[Material]]] = {} #avoids opening the same .prp file multiple times
@@ -843,7 +903,7 @@ class Prop(AnnoObject):
 
         # todo: determine type of material based on PropType 
         type = prop_node.find("Type").text
-        mat = SimplePBRPropShader()
+        mat = cls.default_shader
         if type in cls.shader_classes:
             mat = cls.shader_classes[type]
 

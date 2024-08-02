@@ -21,18 +21,8 @@ class DecalPropShader(AnnoBasicShader):
         self.material_properties.clear()
 
 
-    def create_anno_shader(self):
-        anno_shader = bpy.data.node_groups.new(self.shader_id, 'ShaderNodeTree')
-
-        for l in self.links: 
-            if not l.has_socket():
-                continue
-
-            socket = anno_shader.interface.new_socket(socket_type = l.socket_type, name = l.link_key, in_out = 'INPUT')
-            if l.has_default_value():
-                socket.default_value = l.default_value    
-        
-        anno_shader.interface.new_socket(socket_type = "NodeSocketShader", name = "Shader", in_out='OUTPUT')
+    def create_anno_shader(self):        
+        anno_shader = self.setup_empty_shader()
                 
         shader_template = ShaderTemplate(anno_shader)
         shader_template.add_diffuse("cDiffuse", "cDiffuseMultiplier")

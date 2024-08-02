@@ -14,6 +14,12 @@ from ..shaders.prop_pbr_shader import SimplePBRPropShader
 from ..shaders.prop_terrain_shader import TerrainPropShader
 from ..shaders.prop_plant_shader import PlantPropShader
 from ..shaders.prop_grass_shader import GrassPropShader
+from ..shaders.decal_shader import DecalShader
+from ..shaders.cutout_shader import CutoutShader
+from ..shaders.cloth_shader import ClothShader
+from ..shaders.mockup_shader import MockupShader
+from ..shaders.destruct_shader import DestructShader
+from ..shaders.water_shader import LiquidShader
 
 class generic_cfg_object(Operator, AddObjectHelper):
     bl_idname = "mesh.add_anno_cfgobj"
@@ -129,10 +135,40 @@ class shader_menu(bpy.types.Menu):
         layout = self.layout
 
         layout.operator(
+            shader_decal.bl_idname,
+            text="Decal (1)",
+            icon='FILE_BLANK'
+        )        
+        layout.operator(
+            shader_cloth.bl_idname,
+            text="Model | Cloth (0)",
+            icon='FILE_BLANK'
+        )        
+        layout.operator(
+            shader_cutout.bl_idname,
+            text="Model | Cutout (5)",
+            icon='FILE_BLANK'
+        )          
+        layout.operator(
+            shader_destruct.bl_idname,
+            text="Model | Destruction (6)",
+            icon='FILE_BLANK'
+        )         
+        layout.operator(
+            shader_destruct.bl_idname,
+            text="Model | Liquid (7)",
+            icon='FILE_BLANK'
+        ) 
+        layout.operator(
             shader_default.bl_idname,
             text="Model | Default (8)",
             icon='FILE_BLANK'
-        )        
+        )
+        layout.operator(
+            shader_mockup.bl_idname,
+            text="Model | Mockup (18)",
+            icon='FILE_BLANK'
+        ) 
         layout.operator(
             shader_prop_simple_pbr.bl_idname,
             text="Prop | SimplePBR",
@@ -287,7 +323,77 @@ class shader_cloth(bpy.types.Operator):
 
     def execute(self, context):
         node_tree = context.object.active_material.node_tree
-        my_group = AnnoDefaultShader().add_anno_shader(node_tree.nodes)
+        my_group = ClothShader().add_anno_shader(node_tree.nodes)
+        return {"FINISHED"}
+
+class shader_cutout(bpy.types.Operator):
+    bl_idname = "node.add_anno_shader_cutout"
+    bl_label  = "Add Custom Node Group"
+
+    @classmethod
+    def poll(cls, context):
+        space = context.space_data
+        return space.type == "NODE_EDITOR"
+
+    def execute(self, context):
+        node_tree = context.object.active_material.node_tree
+        my_group = CutoutShader().add_anno_shader(node_tree.nodes)
+        return {"FINISHED"}
+
+class shader_decal(bpy.types.Operator):
+    bl_idname = "node.add_anno_shader_decal"
+    bl_label  = "Add Custom Node Group"
+
+    @classmethod
+    def poll(cls, context):
+        space = context.space_data
+        return space.type == "NODE_EDITOR"
+
+    def execute(self, context):
+        node_tree = context.object.active_material.node_tree
+        my_group = DecalShader().add_anno_shader(node_tree.nodes)
+        return {"FINISHED"}
+
+class shader_mockup(bpy.types.Operator):
+    bl_idname = "node.add_anno_shader_mockup"
+    bl_label  = "Add Custom Node Group"
+
+    @classmethod
+    def poll(cls, context):
+        space = context.space_data
+        return space.type == "NODE_EDITOR"
+
+    def execute(self, context):
+        node_tree = context.object.active_material.node_tree
+        my_group = MockupShader().add_anno_shader(node_tree.nodes)
+        return {"FINISHED"}
+
+class shader_destruct(bpy.types.Operator):
+    bl_idname = "node.add_anno_shader_destruct"
+    bl_label  = "Add Custom Node Group"
+
+    @classmethod
+    def poll(cls, context):
+        space = context.space_data
+        return space.type == "NODE_EDITOR"
+
+    def execute(self, context):
+        node_tree = context.object.active_material.node_tree
+        my_group = DestructShader().add_anno_shader(node_tree.nodes)
+        return {"FINISHED"}
+
+class shader_water(bpy.types.Operator):
+    bl_idname = "node.add_anno_shader_water"
+    bl_label  = "Add Custom Node Group"
+
+    @classmethod
+    def poll(cls, context):
+        space = context.space_data
+        return space.type == "NODE_EDITOR"
+
+    def execute(self, context):
+        node_tree = context.object.active_material.node_tree
+        my_group = LiquidShader().add_anno_shader(node_tree.nodes)
         return {"FINISHED"}
 
 classes = (
@@ -307,7 +413,12 @@ classes = (
     shader_prop_terrain,
     shader_prop_grass,
     shader_prop_plant,
-    shader_cloth
+    shader_cloth,
+    shader_cutout,
+    shader_decal,
+    shader_mockup,
+    shader_destruct,
+    shader_water
 )
 
 def register():

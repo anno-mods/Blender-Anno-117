@@ -7,12 +7,9 @@ class ShaderTemplate:
 
         self.bdsf = self.add_shader_node(self.anno_shader, "ShaderNodeBsdfPrincipled", 
                                         position = (4, 0), 
-                                        inputs = {
-                                            "Alpha" : self.inputs["Alpha"]
-                                        },
                                         default_inputs = {
                                             "Alpha": 1.0,
-                                            "Emission Strength" : 1.0
+                                            "Emission Strength" : 0.0
                                         },
                                     )
 
@@ -23,6 +20,8 @@ class ShaderTemplate:
                                 },
                             )
 
+    def direct_link(self, input_key, bdsf_key):
+        self.anno_shader.links.new(self.bdsf.inputs[bdsf_key], self.inputs[input_key])
 
     def add_diffuse(self, diffuse_key, diffuse_multiplier_key):
         # Mixes Diffuse and cDiffuse
@@ -41,7 +40,7 @@ class ShaderTemplate:
         final_diffuse = self.add_shader_node(self.anno_shader, "ShaderNodeMixRGB",
                                     position = (2, 3),
                                     default_inputs = {
-                                        "Color2" : (1.0, 0.0, 0.0, 1.0),
+                                        "Color2" : (1.0, 1.0, 1.0, 1.0),
                                         "Fac" : 1.0
                                     },
                                     inputs = {
@@ -50,6 +49,7 @@ class ShaderTemplate:
                                     blend_type = "MULTIPLY",
                                 )
         self.anno_shader.links.new(self.bdsf.inputs["Base Color"], final_diffuse.outputs["Color"])
+        self.anno_shader.links.new(self.bdsf.inputs["Alpha"], self.inputs["Alpha"])
         return final_diffuse 
 
     def add_dye(self, diffuse):
