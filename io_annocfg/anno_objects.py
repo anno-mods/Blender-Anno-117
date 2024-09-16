@@ -834,6 +834,8 @@ class Decal(AnnoObject):
     
     @classmethod
     def apply_materials_to_object(cls, obj: BlenderObject, materials):
+        if materials is None: 
+            return 
         for mat in materials:
             obj.data.materials.append(mat)
  
@@ -916,9 +918,10 @@ class Prop(AnnoObject):
 
         mat_list = []
 
-        for material_node in materials:
-            blender_mat = mat.to_blender_material(material_node)
-            mat_list.append(blender_mat)
+        if materials is not None: 
+            for material_node in materials:
+                blender_mat = mat.to_blender_material(material_node)
+                mat_list.append(blender_mat)
 
         prop_data = (mesh_file_name, mat_list)
         cls.prop_data_by_filename[prop_filename] = prop_data
