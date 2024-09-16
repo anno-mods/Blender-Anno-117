@@ -176,6 +176,13 @@ class TextureLink(FlaglessTextureLink):
             return
         flag.text = "1"
 
+    def to_blender(self, shader, material_node : ET.Element, blender_material):
+        flag = material_node.find(self.flag_key)
+        if flag is None:
+            return
+        if (flag.text == "1"):
+            super().to_blender(shader, material_node, blender_material)
+
 class FlagLink(AbstractLink): 
     def __init__(self, link_key, flag_key, is_invalid = False, default_value = None):
         super().__init__(default_value, is_invalid)
