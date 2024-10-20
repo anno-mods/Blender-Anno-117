@@ -21,6 +21,7 @@ class LiquidShader(AnnoBasicShader):
 
         # override default vertexformat
         self.material_properties["VertexFormat"] = "P4h_N4b_G4b_B4b_T2h"
+        self.material_properties["ShaderID"] = "7"
 
     def create_anno_shader(self):
         anno_shader = self.setup_empty_shader()
