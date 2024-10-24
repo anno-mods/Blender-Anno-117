@@ -838,6 +838,39 @@ class Decal(AnnoObject):
             return 
         for mat in materials:
             obj.data.materials.append(mat)
+
+    @classmethod
+    def default_node(cls: Type[T]):
+        node = super().default_node() # type: ignore
+        node.tag = "Config"
+        ET.SubElement(node, "ConfigType").text ="DECAL"
+        ET.SubElement(node, "Type").text = "Terrain"
+        ET.SubElement(node, "DetailTemplateFileName").text = "data/graphics/props/terrain_props/vegetation/grass/decal_grass_single_01.prp"
+        ET.SubElement(node, "OnStreets").text ="1"
+        ET.SubElement(node, "FadeDuration").text = "1000"
+        ET.SubElement(node, "HasDetails").text = "1"
+        ET.SubElement(node, "DetailMeshEmpty").text = "0"
+        ET.SubElement(node, "TexCoords.x").text = "0.00"
+        ET.SubElement(node, "TexCoords.y").text = "0.00"
+        ET.SubElement(node, "TexCoords.z").text = "0.00"
+        ET.SubElement(node, "TexCoords.w").text = "0.00"
+        ET.SubElement(node, "DetailAlphaRef").text = "0.80"
+        ET.SubElement(node, "DetailDensity").text = "2.00"
+
+        detailColorKey = ET.SubElement(node, "DetailColorKey").text = "1.00"
+        ET.SubElement(detailColorKey, "x").text = "0.384314"
+        ET.SubElement(detailColorKey, "y").text = "0.450980"
+        ET.SubElement(detailColorKey, "z").text = "0.243137"
+
+        detailColorTolerance = ET.SubElement(node, "DetailColorTolerance").text = "1.00"
+        ET.SubElement(detailColorTolerance, "x").text = "0.1"
+        ET.SubElement(detailColorTolerance, "y").text = "0.3"
+        ET.SubElement(detailColorTolerance, "z").text = "0.5"
+
+        detailScaleRange = ET.SubElement(node, "DetailScaleRange").text = "1.00"
+        ET.SubElement(DetailScaleRange, "x").text = "0.3"
+        ET.SubElement(DetailScaleRange, "y").text = "0.5"
+        return node
  
 class Prop(AnnoObject):
     has_transform = True

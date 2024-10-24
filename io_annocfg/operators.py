@@ -691,7 +691,7 @@ class ExportAnnoModelOperator(Operator, ExportHelper):
     def export_glb(self, filepath = None):
         if filepath is None:
             filepath = self.filepath
-        bpy.ops.export_scene.gltf(filepath=str(filepath), use_selection = True, check_existing=True, export_format='GLB', export_tangents=True)
+        bpy.ops.export_scene.gltf(filepath=str(filepath), use_selection = True, check_existing=True, export_format='GLB', export_tangents=True, export_vertex_color = 'ACTIVE', export_materials ='PLACEHOLDER')
     
     def export_wrapper(self, export_function):
         """Applies loc rot sca, mirrors the object, removes the parent, executes the export function and restores the previous state
