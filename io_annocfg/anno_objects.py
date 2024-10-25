@@ -28,6 +28,7 @@ from .shaders.default_shader import AnnoDefaultShader
 from .shaders.cloth_shader import ClothShader
 from .shaders.decal_shader import DecalShader
 from .shaders.cutout_shader import CutoutShader
+from .shaders.mine_cutout_shader import MineCutoutShader
 from .shaders.mockup_shader import MockupShader
 from .shaders.prop_decal_shader import DecalPropShader
 from .shaders.prop_decaldetail_shader import DecalDetailPropShader
@@ -158,6 +159,7 @@ class AnnoObject(ABC):
         "8" : AnnoDefaultShader(),
         "0" : ClothShader(),
         "1" : DecalShader(),
+        "4" : MineCutoutShader(),
         "5" : CutoutShader(),
         "18" : MockupShader(),
         "6" : DestructShader(),
@@ -169,6 +171,7 @@ class AnnoObject(ABC):
         "AnnoDefaultShader" : AnnoDefaultShader(),
         "AnnoDecalShader" : DecalShader(),
         "AnnoCutoutShader" : CutoutShader(),
+        "AnnoMineCutoutShader" : MineCutoutShader(),
         "MockupShader" : MockupShader(),
         "AnnoDestructShader" : DestructShader(),
         "AnnoLiquidShader" : LiquidShader()

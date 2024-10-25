@@ -143,9 +143,14 @@ class shader_menu(bpy.types.Menu):
             shader_cloth.bl_idname,
             text="Model | Cloth (0)",
             icon='FILE_BLANK'
-        )        
+        )      
         layout.operator(
             shader_cutout.bl_idname,
+            text="Model | Mine Cutout (4)",
+            icon='FILE_BLANK'
+        )             
+        layout.operator(
+            shader_mine_cutout.bl_idname,
             text="Model | Cutout (5)",
             icon='FILE_BLANK'
         )          
@@ -340,6 +345,21 @@ class shader_cutout(bpy.types.Operator):
         my_group = CutoutShader().add_anno_shader(node_tree.nodes)
         return {"FINISHED"}
 
+
+class shader_mine_cutout(bpy.types.Operator):
+    bl_idname = "node.add_anno_shader_mine_cutout"
+    bl_label  = "Add Custom Node Group"
+
+    @classmethod
+    def poll(cls, context):
+        space = context.space_data
+        return space.type == "NODE_EDITOR"
+
+    def execute(self, context):
+        node_tree = context.object.active_material.node_tree
+        my_group = MineCutoutShader().add_anno_shader(node_tree.nodes)
+        return {"FINISHED"}
+
 class shader_decal(bpy.types.Operator):
     bl_idname = "node.add_anno_shader_decal"
     bl_label  = "Add Custom Node Group"
@@ -415,6 +435,7 @@ classes = (
     shader_prop_plant,
     shader_cloth,
     shader_cutout,
+    shader_mine_cutout,
     shader_decal,
     shader_mockup,
     shader_destruct,
