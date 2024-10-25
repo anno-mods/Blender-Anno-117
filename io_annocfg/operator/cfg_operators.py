@@ -145,12 +145,12 @@ class shader_menu(bpy.types.Menu):
             icon='FILE_BLANK'
         )      
         layout.operator(
-            shader_cutout.bl_idname,
+            shader_mine_cutout.bl_idname,
             text="Model | Mine Cutout (4)",
             icon='FILE_BLANK'
         )             
         layout.operator(
-            shader_mine_cutout.bl_idname,
+            shader_cutout.bl_idname,
             text="Model | Cutout (5)",
             icon='FILE_BLANK'
         )          
