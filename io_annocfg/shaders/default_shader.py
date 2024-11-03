@@ -13,8 +13,8 @@ class AnnoDefaultShader(AnnoBasicShader):
     def __init__(self):
         super().__init__()
 
-        self.shader_id = "AnnoDefaultShader"
-
+        self.shader_id = "AnnoDefaultShader"        
+        self.add_link(IntegerLink("NumBonesPerVertex", "NumBonesPerVertex", 0))
         self.compose(DefaultShaderFakeComponent())
         self.compose(CommonShaderComponent())
         self.compose(DyeMaskTexScrollShaderComponent())

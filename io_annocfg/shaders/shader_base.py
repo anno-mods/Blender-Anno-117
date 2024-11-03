@@ -13,9 +13,7 @@ class AnnoBasicShader:
         self.material_properties = {
             "ConfigType" : "MATERIAL",
             "Name" : "",
-            "ShaderID" : "8",
-            "VertexFormat" : "",
-            "NumBonesPerVertex" : "0"
+            "ShaderID" : "8"
         }
         self.__link_by_key = { }
 

@@ -9,6 +9,7 @@ class MockupShader(AnnoBasicShader):
         self.shader_id = "AnnoMockupShader"
         self.material_properties["VertexFormat"] = "P4h_N4b_G4b_B4b_T2h"
         self.material_properties["ShaderID"] = "18"
+        self.add_link(IntegerLink("NumBonesPerVertex", "NumBonesPerVertex", 0))
         self.compose(SimpleColorComponent())
 
     def create_anno_shader(self):

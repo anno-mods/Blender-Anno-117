@@ -14,7 +14,8 @@ class DestructShader(AnnoBasicShader):
         super().__init__()
 
         self.shader_id = "AnnoDestructShader"
-
+        
+        self.add_link(IntegerLink("NumBonesPerVertex", "NumBonesPerVertex", 0))
         self.add_link(FlagLink("Enable Texture Atlas", "TEXTURE_ATLAS_ENABLED"))
         self.compose(DefaultShaderFakeComponent())
         self.compose(CommonShaderComponent())

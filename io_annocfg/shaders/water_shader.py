@@ -9,7 +9,7 @@ class LiquidShader(AnnoBasicShader):
         super().__init__()
 
         self.shader_id = "AnnoLiquidShader"
-
+        self.add_link(IntegerLink("NumBonesPerVertex", "NumBonesPerVertex", 0))
         self.compose(LiquidStandardComponent())
         self.compose(FlowMapComponent())
         self.compose(OceanWaveComponent())
