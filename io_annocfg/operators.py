@@ -643,7 +643,7 @@ class ExportAnnoModelOperator(Operator, ExportHelper):
             ("P4h_N4b_G4b_B4b_T2h_I4b ", "Animated (P4h_N4b_G4b_B4b_T2h_I4b)", "Animated Format with Joints (set NumBonesPerVertex to 1)"),
             ("P4h_N4b_G4b_B4b_T2h_I4b_W4b", "Complex Animation (P4h_N4b_G4b_B4b_T2h_I4b_W4b)", "Animated Format with weighted Joints (set NumBonesPerVertex to 4)"),
             ("P3f_N3f_G3f_B3f_T2f_C4b", "Cloth (P3f_N3f_G3f_B3f_T2f_C4b)", "Cloth Format (make sure you have at least one channel of vertex colors)"),
-            ("P3f_N3f_G3f_B3f_T2f_C4b_C4b", "Plants (P3f_N3f_G3f_B3f_T2f_C4b_C4b)", "Plant Format with two Vertex Color Channels. make sure you have at least one channel of vertex colors)"),
+            ("P4h_N4b_G4b_B4b_T2h_C4b_C4b", "Plants (P4h_N4b_G4b_B4b_T2h_C4b_C4b)", "Plant Format with two Vertex Color Channels. make sure you have at least one channel of vertex colors)"),
             ("P4h_T2h_C4b", "Decal Detail (P4h_T2h_C4b)", "lightweight format for Decal Detail props. Make sure you have at least one channel of vertex colors."),
         ],
         name = "Vertex Format"
