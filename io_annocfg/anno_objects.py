@@ -172,7 +172,7 @@ class AnnoObject(ABC):
         "AnnoDecalShader" : DecalShader(),
         "AnnoCutoutShader" : CutoutShader(),
         "AnnoMineCutoutShader" : MineCutoutShader(),
-        "MockupShader" : MockupShader(),
+        "AnnoMockupShader" : MockupShader(),
         "AnnoDestructShader" : DestructShader(),
         "AnnoLiquidShader" : LiquidShader()
     }
