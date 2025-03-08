@@ -59,12 +59,14 @@ class fc_object_with_id(generic_fc_object):
         return {'FINISHED'}
 
 class fc_file(generic_fc_object):
+    """Adds a new Fc File"""
     bl_idname = "mesh.add_anno_feedbackfile"
     def __init__(self):
         super().__init__()
         self.TargetObject = Cf7File()
 
 class fc_Dummy(fc_object_with_id):
+    """Creates a new Dummy inside the selected DummyGroup"""
     bl_idname = "mesh.add_anno_dummy"
     def __init__(self):
         super().__init__()
@@ -76,8 +78,8 @@ class fc_Dummy(fc_object_with_id):
             return False
         return get_anno_object_class(context.active_object) == Cf7DummyGroup
 
-
 class fc_DummyGroup(fc_object_with_id):
+    """Creates a new DummyGroup inside the selected fc file or DummyGroup"""
     bl_idname = "mesh.add_anno_dummygroup"
     def __init__(self):
         super().__init__()
