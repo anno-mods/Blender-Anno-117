@@ -65,6 +65,15 @@ class fc_file(generic_fc_object):
         super().__init__()
         self.TargetObject = Cf7File()
 
+    def execute(self, context):
+        self.parent = context.active_object
+        obj = self.TargetObject.from_default()
+        if self.parent:
+            obj.parent = self.parent
+
+        obj.name = "FCFile"
+        return {'FINISHED'}
+
 class fc_Dummy(fc_object_with_id):
     """Creates a new Dummy inside the selected DummyGroup"""
     bl_idname = "mesh.add_anno_dummy"

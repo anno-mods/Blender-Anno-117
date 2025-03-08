@@ -1530,6 +1530,10 @@ class Cf7Dummy(AnnoObject):
         ET.SubElement(node, "HeightAdaptationMode").text ="1"
         ET.SubElement(node, "Id").text = "1"
         ET.SubElement(node, "hasValue").text = "1"
+        extents = ET.SubElement(node, "Extents")
+        ET.SubElement(extents, "x").text = "0.1"
+        ET.SubElement(extents, "y").text = "0.1"
+        ET.SubElement(extents, "z").text = "0.1"
         return node
 
 class Cf7DummyGroup(AnnoObject):
@@ -1538,7 +1542,6 @@ class Cf7DummyGroup(AnnoObject):
     child_anno_object_types = {
         "Dummies" : Cf7Dummy,
     }   
-
     
     @classmethod
     def default_node(cls: Type[T]):
@@ -1592,16 +1595,26 @@ class Cf7File(AnnoObject):
     
     @classmethod
     def default_node(cls: Type[T]):
-        node = super().default_node() # type: ignore
-        node.tag = "Cf7File"
+        wrapper = super().default_node() # type: ignore
+        wrapper.tag = "cf7_imaginary_root"
+
+        ET.SubElement(wrapper, "IdCounter").text = "1"
+
+        node = ET.SubElement(wrapper, "DummyRoot")
+
         ET.SubElement(node, "hasValue").text ="1"
         ET.SubElement(node, "Name").text =""
         ET.SubElement(node, "Dummies").text = ""
-        ET.SubElement(node, "Groups").text
-        ET.SubElement(node, "IdCounter").text = "0"
+        groups = ET.SubElement(node, "Groups")
+        group = ET.SubElement(groups, "i")
+        ET.SubElement(group, "Name").text = "Group"
+        ET.SubElement(group, "Id").text = "1"
+        ET.SubElement(group, "hasValue").text ="1"
+        ET.SubElement(group, "Dummies")
         ET.SubElement(node, "SplineData").text = ""
         ET.SubElement(node, "FeedbackDefinition").text = ""
-        return node
+
+        return wrapper
     
 class NoAnnoObject(AnnoObject):
     pass

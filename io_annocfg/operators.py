@@ -371,7 +371,7 @@ class ImportAnnoCfg(Operator, ImportHelper):
             root = ET.fromstring(xml)
         tree = ET.ElementTree(root)
         cf7_object = Cf7File.xml_to_blender(root, file_obj)
-        cf7_object.name = "CF7FILE"
+        cf7_object.name = "FCFILE"
 
         return
 
