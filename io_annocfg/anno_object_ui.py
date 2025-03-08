@@ -17,6 +17,8 @@ from .material import Material, ClothMaterial
 from .anno_objects import get_anno_object_class,anno_object_classes, set_anno_object_class, MainFile, Model, Cf7File, SubFile, Decal, Propcontainer, Prop, Particle, IfoPlane, Sequence, DummyGroup,\
     Cf7DummyGroup, Cf7Dummy, FeedbackConfig, SimpleAnnoFeedbackEncodingObject, ArbitraryXMLAnnoObject, Light, Cloth, IfoFile, Spline, IslandFile, PropGridInstance, \
     IslandGamedataFile, GameObject, AnimationsNode, Animation, AnimationSequence, AnimationSequences, Track, TrackElement, IfoMeshHeightmap, NoAnnoObject, Dummy, BezierCurve, AssetsXML
+import mathutils
+import math
 
 
 class XMLTooltip(Operator):
@@ -190,6 +192,7 @@ converter_by_tag = {
     "m_IdleSequenceID": FeedbackSequenceConverter,
     "BlenderModelID": ObjectPointerConverter,
     "BlenderParticleID": ObjectPointerConverter,
+    "IdCounter" : IntConverter
 }
 
 def get_converter_for(tag, value_string):
@@ -206,8 +209,7 @@ def get_converter_for(tag, value_string):
     return StringConverter
 
 class XMLPropertyGroup(PropertyGroup):
-    tag : StringProperty(name = "", default = "") # type: ignore
-    
+    tag : StringProperty(name = "", default = "") # type: ignore    
     config_type : StringProperty(name = "", default = "") # type: ignore
     
     feedback_sequence_properties : CollectionProperty(name = "FeedbackSequences", type = FeedbackSequencePropertyGroup) # type: ignore
@@ -251,6 +253,7 @@ class XMLPropertyGroup(PropertyGroup):
                     container.remove(i)
                     return True
         return False
+    
     def get_string(self, tag, default = None):
         for item in self.string_properties:
             if item.tag == tag:
@@ -259,6 +262,13 @@ class XMLPropertyGroup(PropertyGroup):
             if item.tag == tag:
                 return item.value
         return default
+    
+    def get_int(self, tag, default = None):
+        for item in self.int_properties:
+            if item.tag == tag:
+                return item.value
+        return default
+    
     def set(self, tag, value_string, replace = False):
         converter = get_converter_for(tag, value_string)
         value = converter.from_string(value_string)
@@ -266,8 +276,8 @@ class XMLPropertyGroup(PropertyGroup):
         # Special fields
         if tag == "ConfigType":
             self.config_type = value
-            return
-            
+            return          
+
         properties_by_converter = {
             BoolConverter: self.boolean_properties,
             StringConverter: self.string_properties,
@@ -276,7 +286,7 @@ class XMLPropertyGroup(PropertyGroup):
             ColorConverter: self.color_properties,
             ObjectPointerConverter: self.object_pointer_properties,
             FeedbackSequenceConverter: self.feedback_sequence_properties,
-        }
+        }  
         
         properties = properties_by_converter[converter]
         if tag == "FileName":
@@ -506,6 +516,32 @@ class ConvertToXML(Operator):
         xmlstr = ET.tostring(node, encoding='utf8', method='xml')
         xmlstr = xmlstr.replace("<?xml version='1.0' encoding='utf8'?>\n".encode(), "".encode())
         bpy.context.window_manager.clipboard = xmlstr
+        return {'FINISHED'}    
+
+class ExportPosition(Operator):
+    """Converts the selected object into xml and copies it to the clipboard."""
+    bl_idname = "object.copylocation_rotation"
+    bl_label = "Copy Location"
+
+    def execute(self, context):
+        obj = context.active_object
+        if(obj is None):
+            return 
+
+        export = "<Position>"
+        for i in [0, 2, 1]:
+            export = export + "{:.6f}".format(obj.location[i])
+            if (i != 1):
+                export = export + " "
+            
+        export = export + "</Position>\n\t\t\t<Direction>"
+
+        matrix = obj.matrix_world # assign Cube matrix
+        eul = mathutils.Euler(matrix.to_euler('XYZ'), 'XYZ')
+        export = export + "{:.6f}".format(eul.z)
+        export = export + "</Direction>"
+        bpy.context.window_manager.clipboard = export
+        
         return {'FINISHED'}    
 
 class AddFeedbackDummy(Operator):
@@ -968,6 +1004,8 @@ class PT_AnnoObjectPropertyPanel(Panel):
             col.operator(DuplicateAnnoObject.bl_idname, text = "Duplicate Anno Object")
         if not "NoAnnoObject" == obj.anno_object_class_str:
             col.operator(ConvertToXML.bl_idname, text = "Convert To XML")
+        
+        col.operator(ExportPosition.bl_idname, text = "Copy Position to Clipboard")
             
         if "MainFile" in obj.anno_object_class_str or "SubFile" in obj.anno_object_class_str and obj.parent is None:
             col.operator(CreateGameObjectFromFile.bl_idname, text = CreateGameObjectFromFile.bl_label)
@@ -1053,6 +1091,7 @@ classes = [
     DuplicateAnnoObject,
     DuplicateDummy,
     ConvertToXML,
+    ExportPosition,
     CreateGameObjectFromFile,
     ShowSequence,
     ShowModel,

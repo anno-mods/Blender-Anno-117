@@ -27,9 +27,61 @@ from .anno_objects import get_anno_object_class, anno_object_classes, Transform,
 
 from .utils import data_path_to_absolute_path, to_data_path
 
+class ExportAnnoFc(Operator, ExportHelper):
+    """Parses Anno (1800) .cfg files and automatically imports and positions all models, props, particles and decals in the scene. Can also import .prp files into your scene, but you must select a parent object"""
+    bl_idname = "export.anno_fc_files" 
+    bl_label = "Export Anno .fc Files"
+    
+    # ImportHelper mixin class uses this
+    filename_ext = ".fc"
 
+    @classmethod
+    def poll(cls, context):
+        if not context.active_object:
+            return False
+        return get_anno_object_class(context.active_object) == Cf7File
+    
+    def execute(self, context):
+        if not context.active_object:
+            self.report({'ERROR'}, f"CF7_FILE Object needs to be selected. CANCELLED")
+            return {'CANCELLED'}
+        self.main_obj = context.active_object
+        # if not self.main_obj.dynamic_properties.config_type == "MainFile":
+        #     self.report({'ERROR'}, f"MAIN_FILE Object needs to be selected. CANCELLED")
+        #     return {'CANCELLED'}
+        print("EXPORTING", self.main_obj.name, "to", self.filepath)
+        
+        self.initialize_child_map()
 
-class ExportAnnoCfg(Operator, ExportHelper):
+        if not self.main_obj is None:                
+            self.export_cf7_file(self.main_obj, Path(self.filepath).with_suffix(".cf7"))
+        else:
+            self.report({'ERROR'}, 'No Feedback Object, cannot export Feedback')
+            
+        return {'FINISHED'}
+
+    def export_cf7_file(self, cf7_object, cf7_filepath): 
+        cf7root = Cf7File.blender_to_xml(cf7_object, None, self.children_by_object)
+        cf7tree = ET.ElementTree(cf7root)
+        ET.indent(cf7tree, space="\t", level=0)
+        cf7tree_string = ET.tostring(cf7root, encoding='unicode', method='xml')
+        cf7tree_string = cf7tree_string.replace("</cf7_imaginary_root>", "").replace("<cf7_imaginary_root>","").rstrip("\n")
+        with open(cf7_filepath, 'w') as f:
+            f.write(cf7tree_string)
+        if IO_AnnocfgPreferences.get_path_to_fc_converter().exists():
+            subprocess.call(f"\"{IO_AnnocfgPreferences.get_path_to_fc_converter()}\" -w \"{cf7_filepath}\" -y -o \"{cf7_filepath.with_suffix('.fc')}\"")
+        return
+    
+    def initialize_child_map(self):
+        self.children_by_object = {}
+        for obj in bpy.data.objects:
+            if obj.parent is not None:
+                if obj.parent.name in self.children_by_object:
+                    self.children_by_object[obj.parent.name].append(obj)
+                else:
+                    self.children_by_object[obj.parent.name] = [obj]
+
+class ExportAnnoCfg(ExportAnnoFc, ExportHelper):
     """Exports the selected MAIN_FILE into a .cfg Anno file. Check the export ifo box to also create the .ifo/.cf7 file."""
     bl_idname = "export.anno_cfg_files" 
     bl_label = "Export Anno .cfg Files"
@@ -185,16 +237,6 @@ class ExportAnnoCfg(Operator, ExportHelper):
             safe.write_as_cf7(safe_filepath.with_suffix(".cf7"), self.feedback_loop_mode)
             if IO_AnnocfgPreferences.get_path_to_fc_converter().exists():
                 subprocess.call(f"\"{IO_AnnocfgPreferences.get_path_to_fc_converter()}\" -w \"{safe_filepath.with_suffix('.cf7')}\" -y -o \"{safe_filepath.with_suffix('.fc')}\"")
-
-
-    def initialize_child_map(self):
-        self.children_by_object = {}
-        for obj in bpy.data.objects:
-            if obj.parent is not None:
-                if obj.parent.name in self.children_by_object:
-                    self.children_by_object[obj.parent.name].append(obj)
-                else:
-                    self.children_by_object[obj.parent.name] = [obj]
 
 
 
@@ -691,7 +733,7 @@ class ExportAnnoModelOperator(Operator, ExportHelper):
     def export_glb(self, filepath = None):
         if filepath is None:
             filepath = self.filepath
-        bpy.ops.export_scene.gltf(filepath=str(filepath), use_selection = True, check_existing=True, export_format='GLB', export_tangents=True, export_vertex_color = 'ACTIVE', export_materials ='PLACEHOLDER')
+        bpy.ops.export_scene.gltf(filepath=str(filepath), use_selection = True, check_existing=True, export_format='GLB', export_tangents=True, export_vertex_color = 'ACTIVE', export_materials ='EXPORT')
     
     def export_wrapper(self, export_function):
         """Applies loc rot sca, mirrors the object, removes the parent, executes the export function and restores the previous state
@@ -972,6 +1014,7 @@ class ImportAllCfgsOperator(Operator, ImportHelper):
 classes = (
     ExportAnnoCfg,
     ImportAnnoCfg,
+    ExportAnnoFc,
     ExportAnnoModelOperator,
     ImportAnnoModelOperator,
     ImportAnnoPropOperator,
@@ -998,6 +1041,9 @@ def menu_func_import(self, context):
 
 def menu_func_export_cfg(self, context):
     self.layout.operator(ExportAnnoCfg.bl_idname, text="Anno (.cfg)")
+
+def menu_func_export_fc(self, context):
+    self.layout.operator(ExportAnnoFc.bl_idname, text="Anno Feedback (.fc)")
     
 def menu_func_export_model(self, context):
     self.layout.operator(ExportAnnoModelOperator.bl_idname, text="Anno Model (.rdm/.glb)")
@@ -1036,6 +1082,7 @@ import_funcs = [
 ]
 export_funcs = [
     menu_func_export_cfg,
+    menu_func_export_fc,
     menu_func_export_model,
     menu_func_export_island,
     menu_func_export_island_gamedata,

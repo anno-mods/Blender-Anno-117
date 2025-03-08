@@ -860,19 +860,22 @@ class Decal(AnnoObject):
         ET.SubElement(node, "DetailAlphaRef").text = "0.80"
         ET.SubElement(node, "DetailDensity").text = "2.00"
 
-        detailColorKey = ET.SubElement(node, "DetailColorKey").text = "1.00"
+        detailColorKey = ET.SubElement(node, "DetailColorKey")
+        detailColorKey.text = "1.00"
         ET.SubElement(detailColorKey, "x").text = "0.384314"
         ET.SubElement(detailColorKey, "y").text = "0.450980"
         ET.SubElement(detailColorKey, "z").text = "0.243137"
 
-        detailColorTolerance = ET.SubElement(node, "DetailColorTolerance").text = "1.00"
+        detailColorTolerance = ET.SubElement(node, "DetailColorTolerance")
+        detailColorTolerance.text = "1.00"
         ET.SubElement(detailColorTolerance, "x").text = "0.1"
         ET.SubElement(detailColorTolerance, "y").text = "0.3"
         ET.SubElement(detailColorTolerance, "z").text = "0.5"
 
-        detailScaleRange = ET.SubElement(node, "DetailScaleRange").text = "1.00"
-        ET.SubElement(DetailScaleRange, "x").text = "0.3"
-        ET.SubElement(DetailScaleRange, "y").text = "0.5"
+        detailScaleRange = ET.SubElement(node, "DetailScaleRange")
+        detailScaleRange.text = "1.00"
+        ET.SubElement(detailScaleRange, "x").text = "0.3"
+        ET.SubElement(detailScaleRange, "y").text = "0.5"
         return node
  
 class Prop(AnnoObject):
@@ -1518,6 +1521,16 @@ class Cf7Dummy(AnnoObject):
     def add_blender_object_to_scene(cls, node) -> BlenderObject:
         file_obj = add_empty_to_scene("ARROWS")  
         return file_obj
+    
+    @classmethod
+    def default_node(cls: Type[T]):
+        node = super().default_node() # type: ignore
+        node.tag = "i"
+        ET.SubElement(node, "Name").text ="Dummy"
+        ET.SubElement(node, "HeightAdaptationMode").text ="1"
+        ET.SubElement(node, "Id").text = "1"
+        ET.SubElement(node, "hasValue").text = "1"
+        return node
 
 class Cf7DummyGroup(AnnoObject):
     has_transform = False
@@ -1526,9 +1539,20 @@ class Cf7DummyGroup(AnnoObject):
         "Dummies" : Cf7Dummy,
     }   
 
+    
+    @classmethod
+    def default_node(cls: Type[T]):
+        node = super().default_node() # type: ignore
+        node.tag = "i"
+        ET.SubElement(node, "Name").text ="DummyGroup"
+        ET.SubElement(node, "Id").text = "1"
+        ET.SubElement(node, "hasValue").text = "1"
+        return node
+
 
 class Cf7File(AnnoObject):
     has_name = False
+
     child_anno_object_types = {
         "DummyRoot/Groups" : Cf7DummyGroup,
     }   
@@ -1565,6 +1589,19 @@ class Cf7File(AnnoObject):
                 continue
             splinenode_v = Spline.blender_to_xml(spline_obj, spline_data_node, child_map)
             ET.SubElement(spline_data_node, "k").text = get_text(splinenode_v, "Name", "UNKNOWN_KEY")
+    
+    @classmethod
+    def default_node(cls: Type[T]):
+        node = super().default_node() # type: ignore
+        node.tag = "Cf7File"
+        ET.SubElement(node, "hasValue").text ="1"
+        ET.SubElement(node, "Name").text =""
+        ET.SubElement(node, "Dummies").text = ""
+        ET.SubElement(node, "Groups").text
+        ET.SubElement(node, "IdCounter").text = "0"
+        ET.SubElement(node, "SplineData").text = ""
+        ET.SubElement(node, "FeedbackDefinition").text = ""
+        return node
     
 class NoAnnoObject(AnnoObject):
     pass
