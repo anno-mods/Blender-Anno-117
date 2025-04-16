@@ -38,6 +38,7 @@ from .shaders.prop_plant_shader import PlantPropShader
 from .shaders.prop_grass_shader import GrassPropShader
 from .shaders.destruct_shader import DestructShader
 from .shaders.water_shader import LiquidShader
+from .shaders.glass_shader import GlassShader
 # import numpy as np
 
 def convert_to_glb(fullpath: Path):
@@ -163,6 +164,7 @@ class AnnoObject(ABC):
         "5" : CutoutShader(),
         "18" : MockupShader(),
         "6" : DestructShader(),
+        "2" : GlassShader(),
         "7" : LiquidShader()
     }
 
@@ -174,7 +176,8 @@ class AnnoObject(ABC):
         "AnnoMineCutoutShader" : MineCutoutShader(),
         "AnnoMockupShader" : MockupShader(),
         "AnnoDestructShader" : DestructShader(),
-        "AnnoLiquidShader" : LiquidShader()
+        "AnnoLiquidShader" : LiquidShader(),
+        "AnnoGlassShader" : GlassShader()
     }
 
     

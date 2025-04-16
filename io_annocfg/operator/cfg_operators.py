@@ -20,6 +20,7 @@ from ..shaders.cloth_shader import ClothShader
 from ..shaders.mockup_shader import MockupShader
 from ..shaders.destruct_shader import DestructShader
 from ..shaders.water_shader import LiquidShader
+from ..shaders.glass_shader import GlassShader
 
 class generic_cfg_object(Operator, AddObjectHelper):
     bl_idname = "mesh.add_anno_cfgobj"
@@ -142,6 +143,11 @@ class shader_menu(bpy.types.Menu):
         layout.operator(
             shader_cloth.bl_idname,
             text="Model | Cloth (0)",
+            icon='FILE_BLANK'
+        )       
+        layout.operator(
+            shader_glass.bl_idname,
+            text="Model | Glass (2)",
             icon='FILE_BLANK'
         )      
         layout.operator(
@@ -415,6 +421,21 @@ class shader_water(bpy.types.Operator):
         node_tree = context.object.active_material.node_tree
         my_group = LiquidShader().add_anno_shader(node_tree.nodes)
         return {"FINISHED"}
+    
+class shader_glass(bpy.types.Operator):
+    bl_idname = "node.add_anno_shader_glass"
+    bl_label  = "Add Custom Node Group"
+
+    @classmethod
+    def poll(cls, context):
+        space = context.space_data
+        return space.type == "NODE_EDITOR"
+
+    def execute(self, context):
+        node_tree = context.object.active_material.node_tree
+        my_group = GlassShader().add_anno_shader(node_tree.nodes)
+        return {"FINISHED"}
+
 
 classes = (
     cfg_mainfile,
@@ -439,7 +460,8 @@ classes = (
     shader_decal,
     shader_mockup,
     shader_destruct,
-    shader_water
+    shader_water,
+    shader_glass
 )
 
 def register():
