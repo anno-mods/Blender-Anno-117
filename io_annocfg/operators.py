@@ -6,6 +6,7 @@ from bpy_extras.object_utils import AddObjectHelper, object_data_add
 from bpy.props import StringProperty, BoolProperty, EnumProperty, IntProperty,CollectionProperty
 from bpy.types import Operator, AddonPreferences
 from bpy.types import Object as BlenderObject
+import io
 import xml.etree.ElementTree as ET
 import os
 import re
@@ -386,11 +387,20 @@ class ImportAnnoCfg(Operator, ImportHelper):
         safe_object.name = "SimpleAnnoFeedbackEncoding"
         return
 
+    def strip_invalid_brackets(self, file_path):
+        with open(file_path, 'r', encoding='utf-8') as f:
+            xml_text = f.read()
+
+        return re.sub(r'(<\/?\w+)\s+\[\w+\](?=[^>]*>)', r'\1', xml_text)
+
     def import_cfg_file(self, absolute_path, name): 
         if not absolute_path.exists():
             self.report({'INFO'}, f"Missing file: {absolute_path}")
             return
-        tree = ET.parse(absolute_path)
+        
+        stripped = self.strip_invalid_brackets(absolute_path)
+
+        tree = ET.parse(io.StringIO(stripped))
         root = tree.getroot()
         if root is None:
             return
