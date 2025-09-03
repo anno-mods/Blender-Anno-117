@@ -1,16 +1,17 @@
 # Blender Addon for Anno 117
 Blender addon to work with Anno 117 graphics assets. 
 
-- Import/Export of .cfg files
-- Import/Export of .rdm meshes (powered by rdm)
+- Import/Export of 117 graphics files (.cfg) 
+- Import/Export of .rdm meshes (powered by rdm4)
+- Import/Export of feedback files (.fc)
 
 # Requirements
 - Blender **4(.2)** https://www.blender.org/
-- (rdm4)[https://github.com/lukts30/rdm4]
-- (texconv)[https://github.com/microsoft/DirectXTex]
-- (filedbreader)[https://github.com/anno-mods/FileDBReader]
+- [rdm4](https://github.com/lukts30/rdm4)
+- [texconv](https://github.com/microsoft/DirectXTex)
+- [filedbreader](https://github.com/anno-mods/FileDBReader)
 - The blender addon "A.N.T. Landscape". It is shipped with blender, but needs to be enabled in the addon preferences.
-And of course the .rda explorer to unpack the game files: https://github.com/lysannschlegel/RDAExplorer
+And of course the RDAExplorer to unpack the game files: https://github.com/lysannschlegel/RDAExplorer
 
 # Installation
 1. Install the other tools.
