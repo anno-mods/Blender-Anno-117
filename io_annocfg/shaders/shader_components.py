@@ -514,6 +514,7 @@ class PropBackfaceComponent(AbstractShaderComponent):
         self.links = [
             StaticFakeLink("BackFace", "BackFace", "BackFace"),
             FlagLink("Double Sided", "DOUBLE_SIDED"),
+            FlagLink("Flip Backface Normal", "cFlipBackFaceNormal"),
         ]
 
 class PropTransparencyComponent(AbstractShaderComponent):
@@ -679,48 +680,50 @@ class A8_MetallicComponent(AbstractShaderComponent):
     def __init__(self):
         self.links = [            
             StaticFakeLink("Common", "Common", "Common"),
-            TextureLink("Metallic", "METALLIC_TEX_ENABLED", "cModelMetallicTex"),
+            TextureLink("cMetallic", "METALLIC_TEX_ENABLED", "cModelMetallicTex"),
         ]
 
 class A8_DiffuseComponent(AbstractShaderComponent):
     def __init__(self):
         self.links = [            
             StaticFakeLink("Common", "Common", "Common"),
-            TextureLink("Diffuse", "DIFFUSE_ENABLED", "cModelDiffTex"),
-            ColorLink("Diffuse Multiplier", "cDiffuseColor"),
+            TextureLink("cDiffuse", "DIFFUSE_ENABLED", "cModelDiffTex", alpha_link="Alpha"),
+            FloatLink("Alpha", "", is_invalid=True, default_value=1.0),
+            ColorLink("cDiffuseMultiplier", "cDiffuseColor", default_value=(1.0, 1.0, 1.0, 1.0)),
         ]
 
 class A8_NormalComponent(AbstractShaderComponent):
     def __init__(self):
         self.links = [            
             StaticFakeLink("Normal", "Normal", "Normal"),
-            TextureLink("Normal", "NORMAL_ENABLED", "cModelNormalTex"),
+            TextureLink("cNormal", "NORMAL_ENABLED", "cModelNormalTex", alpha_link="Glossiness"),
+            FloatLink("Glossiness", "", is_invalid=True),
         ]
 
 class A8_GlossFactorComponent(AbstractShaderComponent):
     def __init__(self):
         self.links = [            
             StaticFakeLink("GlossFactor", "GlossFactor", "GlossFactor"),
-            FloatLink("Gloss Factor", "cGlossinessFactor"),
+            FloatLink("Gloss Factor", "cGlossinessFactor", default_value=1.0),
         ]
 
 class A8_OpacityComponent(AbstractShaderComponent):
     def __init__(self):
         self.links = [            
             StaticFakeLink("Opacity", "Opacity", "Opacity"),
-            FloatLink("Alpha", "cOpacity"),
+            FloatLink("Opacity", "cOpacity", default_value=1.0),
         ]
 
 class A8_HeightComponent(AbstractShaderComponent):    
     def __init__(self):
         self.links = [            
             StaticFakeLink("HeightMap", "HeightMap", "HeightMap"),
-            TextureLink("Height Map", "HEIGHT_MAP_ENABLED", "cHeightMap"),
-            FloatLink("Parallax Scale", "cParallaxScale"),
+            TextureLink("cHeight", "HEIGHT_MAP_ENABLED", "cHeightMap"),
+            FloatLink("Parallax Scale", "cParallaxScale", default_value=1.0),
             FlagLink("Enable Parallax Mapping", "PARALLAX_MAPPING_ENABLED"),
             FlagLink("Enable Self Shadowing", "SELF_SHADOWING_ENABLED"),
             FlagLink("Enable Height based Wetness", "HEIGHT_MAP_BASED_WETNESS_ENABLED"),
-            FloatLink("Max Water Level", "cMaxWaterLevel")
+            FloatLink("Max Water Level", "cMaxWaterLevel"),
             FloatLink("Height Map Lowpoint", "cHeightmapLowestPoint")
         ]
 
@@ -749,8 +752,8 @@ class A8_UvMappingComponent(AbstractShaderComponent):
         self.links = [            
             StaticFakeLink("UVMappingTransform", "UVMappingTransform", "UVMappingTransform"),
             FlagLink("Enable Transformed UVs", "ENABLE_UV_TRANSFORM"),
-            FloatLink("Tiling.x", "cTexTiling.x"),
-            FloatLink("Tiling.y", "cTexTiling.y"),
+            FloatLink("Tiling.x", "cTexTiling.x", default_value=1.0),
+            FloatLink("Tiling.y", "cTexTiling.y", default_value=1.0),
             FlagLink("Flip U", "cTexFlipU"),        
             FlagLink("Flip V", "cTexFlipV"),         
             FloatLink("Offset.x", "cTexOffset.x"),
@@ -764,6 +767,39 @@ class A8_SheenComponent(AbstractShaderComponent):
         self.links = [            
             StaticFakeLink("Sheen", "Sheen", "Sheen"),
             FlagLink("Enable Sheen", "SHEEN_ENABLED"),
-            FloatLink("Sheen Intensity", "cSheenIntensity"),
-            ColorLink("Sheen Color", "cSheenColor")     
+            FloatLink("Sheen Intensity", "cSheenIntensity", default_value=0.5),
+            FloatLink("Sheen Falloff", "cSheenFalloff", default_value=8),
+            ColorLink("Sheen Color", "cSheenColor", default_value=(0.5, 0.5, 0.5, 1.0))     
+        ]
+
+class A8_MaterialBlendingComponent(AbstractShaderComponent):    
+    def __init__(self):
+        self.links = [            
+            StaticFakeLink("MaterialBlending", "MaterialBlending", "MaterialBlending"),
+            FlagLink("Enable Material Blending", "SHEEN_ENABLED"),            
+            TextureLink("Diffuse2", "MATERIAL_BLEND_ENABLED", "c2ndModelDiffTex"),  
+            TextureLink("Normal2", "MATERIAL_BLEND_NORMAL_MAP_ENABLED", "c2ndModelNormalTex"),  
+            FloatLink("cMaterialBlendModifier", "cMaterialBlendModifier")
+        ]
+
+class A8_DyeMaskComponent(AbstractShaderComponent):    
+    def __init__(self):
+        self.links = [            
+            StaticFakeLink("DyeMask", "DyeMask", "DyeMask"),
+            TextureLink("cDyeMask", "DYE_MASK_ENABLED", "cDyeMask"),
+        ]
+
+class A8_GlowComponent(AbstractShaderComponent): 
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("Glow", "Glow", "Glow"),
+            FlagLink("Enable Glow", "GLOW_ENABLED"),
+            ColorLink("cEmissiveColor", "cEmissiveColor", default_value=(2.0, 2.0, 2.0, 1.0))
+        ]
+
+class A8_NightGlowComponent(AbstractShaderComponent): 
+    def __init__(self):
+        self.links = [
+            StaticFakeLink("NightGlow", "NightGlow", "NightGlow"),
+            TextureLink("cNightGlow", "NIGHT_GLOW_ENABLED", "cNightGlowMap")
         ]
