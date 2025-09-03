@@ -1,16 +1,14 @@
-# Blender-Anno-.cfg-Import/Export-Addon
-Allows you to import from Anno (1800) .cfg files, make changes and export it to .cfg again.
-Automatically positions all models, props, particles, decals, subfiles, ifo-blockers, and cf7 blockers in the scene.
-When used with the rdm4 converter and texconv, it will automatically convert .rdm to .glb and .dds to .png for importing. Same goes for .fc files and the AnnoFCConverter. It also has a export to .rda option for models.
-This means that if you have all those tools, you don't have to convert anything manually and can edit everything directly in Blender.
+# Blender Addon for Anno 117
+Blender addon to work with Anno 117 graphics assets. 
+
+- Import/Export of .cfg files
+- Import/Export of .rdm meshes (powered by rdm)
 
 # Requirements
-- Blender **3(.2)** https://www.blender.org/
-
-For full functionality you need:
-- rdm4 converter https://github.com/lukts30/rdm4
-- texconv.exe https://github.com/microsoft/DirectXTex
-- .fc Converter (AnnoFCConverter.exe) (please use this one, as it doesn't have a problem with newlines at the end: https://github.com/jakobharder/AnnoFCConverter)
+- Blender **4(.2)** https://www.blender.org/
+- (rdm4)[https://github.com/lukts30/rdm4]
+- (texconv)[https://github.com/microsoft/DirectXTex]
+- (filedbreader)[https://github.com/anno-mods/FileDBReader]
 - The blender addon "A.N.T. Landscape". It is shipped with blender, but needs to be enabled in the addon preferences.
 And of course the .rda explorer to unpack the game files: https://github.com/lysannschlegel/RDAExplorer
 
@@ -19,14 +17,13 @@ And of course the .rda explorer to unpack the game files: https://github.com/lys
 2. Open blender, go to Edit->Preferences->Addons. Click `Install...` and select the downloaded `io_annocfg.zip` (https://github.com/xormenter/Blender-Anno-.cfg-Import-Addon/releases/tag/v.2.1).
 3. If you haven't done so already, **unpack the .rda files** (at least the data/graphics part of it) into a single folder. It should look something like this: `C:\whatever\somewhere\rda\data\graphics\...`.  
 4. In the addon preferences, set the **rda path** to the folder that **contains** your `data` folder with the unpacked rda files. In this example, that would be `C:\whatever\somewhere\rda`
-5. Specify the paths to the `texconv.exe`, `rdm4-bin.exe`, `AnnoFCConverter.exe` executables.
+5. Specify the paths to the `texconv.exe`, `rdm4-bin.exe`, `FileDBReader.exe` executables.
 
 You are now ready to go! Optional: Set up the prop asset library (See below)
 
-
 # Usage
 ## Importing 
-1. With the addon enabled, go to `Blender->Import->Anno (.cfg)`. Select the .cfg file that you want to import into blender. 
+1. With the addon enabled, go to `Blender->Import->Anno 117 (.cfg)`. Select the .cfg file that you want to import into blender. 
 2. This may take some time. Tip: Use solid viewport shading during the import - generating the material shaders takes up the most time. 
 3. It should look something like this now:
 4. ![Blender 08_01_2022 23_04_29](https://user-images.githubusercontent.com/94999291/148661492-a38178c6-9e5f-49b2-9c3f-404f283c21a0.png)
