@@ -6,10 +6,10 @@ from bpy_extras.object_utils import AddObjectHelper, object_data_add
 from bpy.props import StringProperty, BoolProperty, EnumProperty, IntProperty,CollectionProperty
 from bpy.types import Operator, AddonPreferences
 from bpy.types import Object as BlenderObject
-import io
 import xml.etree.ElementTree as ET
 import os
 import re
+import io
 import math
 import subprocess
 import mathutils
@@ -25,6 +25,15 @@ from .anno_objects import get_anno_object_class, anno_object_classes, Transform,
     Dummy, Cf7DummyGroup, Cf7Dummy, FeedbackConfig, Light, IfoFile, Cf7File, IslandFile, PropGridInstance, IslandGamedataFile, AssetsXML,\
     Animation, Cloth, BezierCurve, GameObject, AnimationsNode, AnimationSequences, AnimationSequence, Track, TrackElement, IfoMeshHeightmap,BezierCurve,Spline
 
+def strip_invalid_brackets(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        xml_text = f.read()
+    return re.sub(r'(<\/?\w+)\s+\[\w+\](?=[^>]*>)', r'\1', xml_text)
+
+def parseStrippedXML(absolute_path):
+    stripped = strip_invalid_brackets(absolute_path)
+    tree = ET.parse(io.StringIO(stripped))
+    return tree
 
 from .utils import data_path_to_absolute_path, to_data_path
 
@@ -349,7 +358,7 @@ class ImportAnnoCfg(Operator, ImportHelper):
         if not fullpath.exists():
             self.report({'INFO'}, f"Missing file {fullpath}")
             return
-        tree = ET.parse(fullpath)
+        tree = parseStrippedXML(fullpath)
         root = tree.getroot()
         
         ifo_obj = IfoFile.xml_to_blender(root, file_obj)
@@ -381,26 +390,18 @@ class ImportAnnoCfg(Operator, ImportHelper):
             self.report({'INFO'}, f"Missing file: {fullpath}")
             return
         print("importing safexml")
-        tree = ET.parse(fullpath)
+        tree = parseStrippedXML(fullpath)
         root = tree.getroot()
         safe_object = SimpleAnnoFeedbackEncodingObject.xml_to_blender(root, file_obj)
         safe_object.name = "SimpleAnnoFeedbackEncoding"
         return
-
-    def strip_invalid_brackets(self, file_path):
-        with open(file_path, 'r', encoding='utf-8') as f:
-            xml_text = f.read()
-
-        return re.sub(r'(<\/?\w+)\s+\[\w+\](?=[^>]*>)', r'\1', xml_text)
+    
 
     def import_cfg_file(self, absolute_path, name): 
         if not absolute_path.exists():
             self.report({'INFO'}, f"Missing file: {absolute_path}")
             return
-        
-        stripped = self.strip_invalid_brackets(absolute_path)
-
-        tree = ET.parse(io.StringIO(stripped))
+        tree = parseStrippedXML(absolute_path)
         root = tree.getroot()
         if root is None:
             return
@@ -456,7 +457,7 @@ class ImportAnnoIsland(Operator, ImportHelper):
         
         # if "gamedata" in self.path.stem:
         #     print(self.path.name, " is a gamedata island file.")
-        #     tree = ET.parse(self.path)
+        #     tree = parseStrippedXML(self.path)
         #     root = tree.getroot()
             
         #     assetsXML = AssetsXML()
@@ -466,7 +467,7 @@ class ImportAnnoIsland(Operator, ImportHelper):
         #     self.report({'INFO'}, "Import completed!")
         #     return {"FINISHED"}
         
-        tree = ET.parse(self.path)
+        tree = parseStrippedXML(self.path)
         root = tree.getroot()
         
         file_obj = IslandFile.xml_to_blender(root, self.prop_import)
@@ -495,7 +496,7 @@ class ImportAnnoIslandGamedata(Operator, ImportHelper):
         if not self.path.suffix == ".xml" or not self.path.exists():
             self.report({'ERROR_INVALID_INPUT'}, f"Invalid file or extension")
             return {'CANCELLED'}
-        tree = ET.parse(self.path)
+        tree = parseStrippedXML(self.path)
         root = tree.getroot()
         
         assetsXML = AssetsXML()

@@ -53,7 +53,7 @@ class Material:
         "ABSOLUTE_TERRAIN_ADAPTION":"", "Environment":"", "cUseLocalEnvironmentBox":"", "cEnvironmentBoundingBox.x":"", "cEnvironmentBoundingBox.y":"", "cEnvironmentBoundingBox.z":"", \
         "cEnvironmentBoundingBox.w":"", "Glow":"", "GLOW_ENABLED":"", \
         "WindRipples":"", "WIND_RIPPLES_ENABLED":"", "cWindRippleTex":"", "cWindRippleTiling":"", "cWindRippleSpeed":"", "cWindRippleNormalIntensity":"", \
-        "cWindRippleMeshIntensity":"", "DisableReviveDistance":"", "cGlossinessFactor":"", "cOpacity":"",
+        "cWindRippleMeshIntensity":"", "DisableReviveDistance":"", "cGlossinessFactor":"", "cOpacity":"", "ALPHA_BLEND_ENABLED":"",
     }
     materialCache: Dict[Tuple[Any,...], Material] = {}
 
