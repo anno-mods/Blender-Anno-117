@@ -192,7 +192,8 @@ converter_by_tag = {
     "m_IdleSequenceID": FeedbackSequenceConverter,
     "BlenderModelID": ObjectPointerConverter,
     "BlenderParticleID": ObjectPointerConverter,
-    "IdCounter" : IntConverter
+    "IdCounter" : IntConverter,
+    "Line" : StringConverter # fix crash for ifo files (feedback area) TODO: represent this as a blender object
 }
 
 def get_converter_for(tag, value_string):

@@ -225,10 +225,11 @@ class FloatLink(AbstractLink):
         subnode = material_node.find(self.flag_key)
         if subnode is None:
             input.default_value = 0.0 
-        try:
-            input.default_value = float(subnode.text)
-        except: 
-            input.default_value = self.default_value if self.has_default_value() else 0.0
+        else:
+            try:
+                input.default_value = float(subnode.text)
+            except: 
+                input.default_value = self.default_value if self.has_default_value() else 0.0
 
 class IntegerLink(AbstractLink): 
     def __init__(self, link_key, flag_key, is_invalid = False, default_value = None):

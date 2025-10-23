@@ -653,7 +653,7 @@ class Model(AnnoObject):
         print(node)
         data_path = get_text(node, "FileName")
         imported_obj = None 
-        if data_path is not "":
+        if data_path != "":
             imported_obj = import_model_to_scene(data_path)
         if imported_obj is None:
             bpy.ops.mesh.primitive_cube_add(size = 1.0, location=(0,0,0))
@@ -1234,7 +1234,8 @@ class IfoMeshHeightmap(AnnoObject):
         stepy = float(get_text(node, "StepSize/y"))
         width = int(get_text(node, "Heightmap/Width"))
         height = int(get_text(node, "Heightmap/Height"))
-        heightdata = [float(s.text) for s in node.findall("Heightmap/Map/i")]
+        heightdata = [float(s.text) for s in node.findall("Heightmap/Map/i/Height")]
+        #TODO Missing new element transform/pivot/{xf,yf,zf} probably fine without that?
         node.find("Heightmap").remove(node.find("Heightmap/Map"))
         print(f"Heightmap w={width} x h={height} => {len(heightdata)}")
         
