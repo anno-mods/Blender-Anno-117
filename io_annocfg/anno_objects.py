@@ -44,7 +44,8 @@ from .shaders.glass_shader import GlassShader
 def strip_invalid_brackets(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         xml_text = f.read()
-    return re.sub(r'(<\/?\w+)\s+\[\w+\](?=[^>]*>)', r'\1', xml_text)
+    stripped =  re.sub(r'(<\/?\w+)\s+\[\w+\](?=[^>]*>)', r'\1', xml_text)
+    return  re.sub(r'[\x00-\x1f\x7f-\x9f]', '', stripped) #remove unicode control characters
 
 def parseStrippedXML(absolute_path):
     stripped = strip_invalid_brackets(absolute_path)
