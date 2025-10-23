@@ -14,7 +14,7 @@ from bpy.props import EnumProperty, BoolProperty, PointerProperty, IntProperty, 
 from bpy.types import PropertyGroup, Panel, Operator, UIList
 import bmesh
 import sys
-
+import io
 from collections import defaultdict
 from math import radians
 from .prefs import IO_AnnocfgPreferences
@@ -41,6 +41,16 @@ from .shaders.water_shader import LiquidShader
 from .shaders.glass_shader import GlassShader
 # import numpy as np
 
+def strip_invalid_brackets(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        xml_text = f.read()
+    return re.sub(r'(<\/?\w+)\s+\[\w+\](?=[^>]*>)', r'\1', xml_text)
+
+def parseStrippedXML(absolute_path):
+    stripped = strip_invalid_brackets(absolute_path)
+    tree = ET.parse(io.StringIO(stripped))
+    return tree
+
 def convert_to_glb(fullpath: Path):
     rdm4_path = IO_AnnocfgPreferences.get_path_to_rdm4()
     if rdm4_path.exists() and fullpath.exists():
@@ -59,7 +69,7 @@ def import_model_to_scene(data_path: Union[str, Path, None]) -> BlenderObject:
     if not data_path:
         print("invalid data path")
         return add_empty_to_scene()
-    fullpath = data_path_to_absolute_path(data_path)
+    fullpath = data_path_to_absolute_path(data_path).with_suffix(".rdm")
     convert_to_glb_if_required(fullpath)
     if fullpath is None:
         #self.report({'INFO'}, f"Missing file: Cannot find rmd model {data_path}.")
@@ -484,7 +494,7 @@ class Cloth(AnnoObject):
     def add_blender_object_to_scene(cls, node) -> BlenderObject:
         data_path = get_text(node, "FileName")
         imported_obj = None
-        if data_path is not "":
+        if data_path != "":
             imported_obj = import_model_to_scene(data_path)
         if imported_obj is None:
             bpy.ops.mesh.primitive_plane_add(size=1, enter_editmode=False, align='WORLD', location=(0,0,0), scale=(1,1,1))
@@ -790,7 +800,7 @@ class SubFile(AnnoObject):
             if file_obj is not None:
                 return file_obj
         
-        tree = ET.parse(fullpath)
+        tree = parseStrippedXML(fullpath)
         root = tree.getroot()
         if root is None:
             return add_empty_to_scene()
@@ -936,7 +946,7 @@ class Prop(AnnoObject):
         subprocess.call(proc_args)
 
         xml_path = prop_file.with_suffix(".xml")
-        tree = ET.parse(xml_path)
+        tree = parseStrippedXML(xml_path)
         root = tree.getroot()
 
         # get prop node
@@ -2157,7 +2167,7 @@ class AssetsXML():
             raise Exception(f"Assets.xml required for this island file. Expected it at '{self.path}'")
         
         print("Loading assets.xml")
-        self.tree = ET.parse(self.path)
+        self.tree = parseStrippedXML(self.path)
         self.root = self.tree.getroot()
         print("Assets.xml loaded.")
         
