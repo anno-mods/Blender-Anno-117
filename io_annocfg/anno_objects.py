@@ -78,6 +78,7 @@ def import_model_to_scene(data_path: Union[str, Path, None]) -> BlenderObject:
     fullpath = fullpath.with_suffix(".glb")
     if not fullpath.exists():
         #self.report({'INFO'}, f"Missing file: Cannot find glb model {data_path}.")
+        print(f"Missing file: Cannot find glb model {data_path}.")
         return None
     # bpy.context.view_layer.objects.active = None
     # for obj in bpy.data.objects:
@@ -420,31 +421,31 @@ class AnnoObject(ABC):
             obj (BlenderObject): The object
             materials (List[Material]): The materials.
         """
-        
+        def tryToInt(string):
+            try:
+                return int(string)
+            except ValueError:
+                return -1
+            
         if not obj.data:
             #or not obj.data.materials:
             return
         if len(materials) > 1 and all([bool(re.match( "Material_[0-9]+.*",m.name)) for m in obj.data.materials]):
-            sorted_materials = sorted([mat.name for i, mat in enumerate(obj.data.materials)])
-            if sorted_materials != [mat.name for mat in obj.data.materials]:
-                
-                print("Imported .glb with unordered but enumerated materials. Sorting the slots.")
-                print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-                print(sorted_materials)
-                for sorted_index, mat_name in enumerate(sorted_materials):
-                    index = 0
-                    for i, mat in enumerate(obj.data.materials):
-                        index = i
-                        if mat.name == mat_name:
-                            break
-                    bpy.context.object.active_material_index = index
-                    for _ in range(len(obj.data.materials)):
-                        bpy.ops.object.material_slot_move(direction='DOWN')
+            sorted_materials = sorted([(tryToInt(re.sub(r'[^0-9]', '', mat.name)), mat.name) for i, mat in enumerate(obj.data.materials)])
+            for sortingIndex, mat_name in sorted_materials:
+                index = 0
+                for i, mat in enumerate(obj.data.materials):
+                    index = i
+                    if mat.name == mat_name:
+                        break
+                bpy.context.object.active_material_index = index
+                for _ in range(len(obj.data.materials)):
+                    bpy.ops.object.material_slot_move(direction='DOWN')
 
         missing_slots = len(materials) - len(obj.data.materials)
         if missing_slots > 0:
             for i in range(missing_slots):
-                obj.data.materials.append(bpy.data.materials.new(name="NewSlotMaterial"))
+                obj.data.materials.append(bpy.data.materials.new(name=f"NewSlotMaterial{i}"))
         for i, material in enumerate(materials):
             if not material:
                 continue
@@ -800,8 +801,11 @@ class SubFile(AnnoObject):
             file_obj = cls.try_loading_from_library(data_path, last_modified)
             if file_obj is not None:
                 return file_obj
-        
-        tree = parseStrippedXML(fullpath)
+        try:
+            tree = parseStrippedXML(fullpath)
+        except:
+            print("Could not import subfile")
+            return add_empty_to_scene()
         root = tree.getroot()
         if root is None:
             return add_empty_to_scene()
@@ -1264,7 +1268,8 @@ class IfoMeshHeightmap(AnnoObject):
         map_node = ET.SubElement(node.find("Heightmap"), "Map")
         for vert in obj.data.vertices:
             z = vert.co.z
-            ET.SubElement(map_node, "i").text = format_float(z)
+            i_node = ET.SubElement(map_node, "i")
+            ET.SubElement(i_node, "Height").text = format_float(z)
         return node
 
 class Sequence(AnnoObject):
