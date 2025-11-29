@@ -345,10 +345,12 @@ class AnnoObject(ABC):
             transform.convert_to_anno_coords()
             if "base_path" in cls.transform_paths:
                 transform_node = find_or_create(node, cls.transform_paths["base_path"])
+                
+            permitsUniformScale = "scale" in cls.transform_paths.keys()
             for transform_component, xml_path in cls.transform_paths.items():
                 if transform_component == "base_path":
                     continue
-                value = transform.get_component_value(transform_component)
+                value = transform.get_component_value(transform_component, permitsUniformScale)
                 find_or_create(transform_node, xml_path).text = format_float(value)
         if cls.has_materials:
             materials_node = find_or_create(node, "Materials")
@@ -468,11 +470,12 @@ class Cloth(AnnoObject):
         "rotation.y":"Rotation.y",
         "rotation.z":"Rotation.z",
         "rotation.w":"Rotation.w",
-        "scale.x":"Scale",
-        "scale.y":"Scale",
-        "scale.z":"Scale",
+        "scale":"Scale",
+        "scale.x":"NonUniformScale.x",
+        "scale.y":"NonUniformScale.y",
+        "scale.z":"NonUniformScale.z",
     }
-    enforce_equal_scale = True #scale.x, .y and .z must be equal
+    enforce_equal_scale = False #scale.x, .y and .z must be equal
     has_materials = True
     material_class = ClothMaterial
     
@@ -632,11 +635,12 @@ class Model(AnnoObject):
         "rotation.y":"Rotation.y",
         "rotation.z":"Rotation.z",
         "rotation.w":"Rotation.w",
-        "scale.x":"Scale",
-        "scale.y":"Scale",
-        "scale.z":"Scale",
+        "scale":"Scale",
+        "scale.x":"NonUniformScale.x",
+        "scale.y":"NonUniformScale.y",
+        "scale.z":"NonUniformScale.z",
     }
-    enforce_equal_scale = True #scale.x, .y and .z must be equal
+    enforce_equal_scale = False #scale.x, .y and .z must be equal
     has_materials = True
 
     @classmethod
@@ -711,11 +715,12 @@ class SubFile(AnnoObject):
         "rotation.y":"Rotation.y",
         "rotation.z":"Rotation.z",
         "rotation.w":"Rotation.w",
-        "scale.x":"Scale",
-        "scale.y":"Scale",
-        "scale.z":"Scale",
+        "scale":"Scale",
+        "scale.x":"NonUniformScale.x",
+        "scale.y":"NonUniformScale.y",
+        "scale.z":"NonUniformScale.z",
     }
-    enforce_equal_scale = True #scale.x, .y and .z must be equal
+    enforce_equal_scale = False #scale.x, .y and .z must be equal
     has_materials = False
 
     @classmethod
@@ -906,9 +911,10 @@ class Prop(AnnoObject):
         "rotation.y":"Rotation.y",
         "rotation.z":"Rotation.z",
         "rotation.w":"Rotation.w",
-        "scale.x":"Scale.x",
-        "scale.y":"Scale.y",
-        "scale.z":"Scale.z",
+        "scale":"Scale",
+        "scale.x":"NonUniformScale.x",
+        "scale.y":"NonUniformScale.y",
+        "scale.z":"NonUniformScale.z",
     }
     enforce_equal_scale = False #scale.x, .y and .z must be equal
     has_materials = False
@@ -1019,11 +1025,12 @@ class Propcontainer(AnnoObject):
         "rotation.y":"Rotation.y",
         "rotation.z":"Rotation.z",
         "rotation.w":"Rotation.w",
-        "scale.x":"Scale.x",
-        "scale.y":"Scale.y",
-        "scale.z":"Scale.z",
+        "scale":"Scale",
+        "scale.x":"NonUniformScale.x",
+        "scale.y":"NonUniformScale.y",
+        "scale.z":"NonUniformScale.z",
     }
-    enforce_equal_scale = True #scale.x, .y and .z must be equal
+    enforce_equal_scale = False #scale.x, .y and .z must be equal
     has_materials = False
     child_anno_object_types = {
         "Props" : Prop,
@@ -1042,7 +1049,7 @@ class Propcontainer(AnnoObject):
 class Light(AnnoObject):
     has_transform = True
     has_visibility_transform = False #not sure...
-    enforce_equal_scale = True
+    enforce_equal_scale = False
     transform_paths = {
         "base_path":"Transformer/Config[ConfigType = 'ORIENTATION_TRANSFORM']",
         "location.x":"Position.x",
@@ -1052,9 +1059,10 @@ class Light(AnnoObject):
         "rotation.y":"Rotation.y",
         "rotation.z":"Rotation.z",
         "rotation.w":"Rotation.w",
-        "scale.x":"Scale",
-        "scale.y":"Scale",
-        "scale.z":"Scale",
+        "scale":"Scale",
+        "scale.x":"NonUniformScale.x",
+        "scale.y":"NonUniformScale.y",
+        "scale.z":"NonUniformScale.z",
     }
     @classmethod
     def node_to_property_node(self, node, obj):
@@ -1092,11 +1100,12 @@ class Particle(AnnoObject):
         "rotation.y":"Rotation.y",
         "rotation.z":"Rotation.z",
         "rotation.w":"Rotation.w",
-        "scale.x":"Scale",
-        "scale.y":"Scale",
-        "scale.z":"Scale",
+        "scale":"Scale",
+        "scale.x":"NonUniformScale.x",
+        "scale.y":"NonUniformScale.y",
+        "scale.z":"NonUniformScale.z",
     }
-    enforce_equal_scale = True
+    enforce_equal_scale = False
     has_materials = False
     
     @classmethod
