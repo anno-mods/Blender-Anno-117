@@ -22,7 +22,7 @@ class Transform:
         self.scale = sca
         self.anno_coords = anno_coords
         
-    def get_component_value(self, component_name: str) -> float:
+    def get_component_value(self, component_name: str,  permitsUniformScale:bool = True) -> float:
         component_by_name = {
             "location.x": self.location[0],
             "location.y": self.location[1],
@@ -36,11 +36,17 @@ class Transform:
             "rotation_euler.x": self.rotation_euler[0],
             "rotation_euler.y": self.rotation_euler[1],
             "rotation_euler.z": self.rotation_euler[2],
-            
-            "scale.x": self.scale[0],
-            "scale.y": self.scale[1],
-            "scale.z": self.scale[2],
         }
+        if (permitsUniformScale and self.scale[0] == self.scale[1] and self.scale[0] == self.scale[2]):
+            component_by_name["scale"] = self.scale[0]
+            component_by_name["scale.x"] = 1.0
+            component_by_name["scale.y"] = 1.0
+            component_by_name["scale.z"] = 1.0
+        else:
+            component_by_name["scale"] = 1.0
+            component_by_name["scale.x"] = self.scale[0]
+            component_by_name["scale.y"] = self.scale[1]
+            component_by_name["scale.z"] = self.scale[2]
         return component_by_name[component_name]
         
     def get_component_from_node(self, node: ET.Element, transform_paths: Dict[str, str], component: str, default = 0.0) -> float:
@@ -52,17 +58,15 @@ class Transform:
         
     @classmethod
     def from_node(cls, node: ET.Element, transform_paths, enforce_equal_scale: bool, euler_rotation: bool = False) -> Transform:
+        #todo remove param enforce equal scale
         instance = cls()
         instance.location[0] = instance.get_component_from_node(node, transform_paths, "location.x")
         instance.location[1] = instance.get_component_from_node(node, transform_paths, "location.y")
         instance.location[2] = instance.get_component_from_node(node, transform_paths, "location.z")
         
-        instance.scale[0] = instance.get_component_from_node(node, transform_paths, "scale.x", 1.0)
-        instance.scale[1] = instance.get_component_from_node(node, transform_paths, "scale.y", 1.0)
-        instance.scale[2] = instance.get_component_from_node(node, transform_paths, "scale.z", 1.0)
-        if enforce_equal_scale:
-            instance.scale[1] = instance.scale[0]
-            instance.scale[2] = instance.scale[1]
+        instance.scale[0] = instance.get_component_from_node(node, transform_paths, "scale.x", 1.0) * instance.get_component_from_node(node, transform_paths, "scale", 1.0)
+        instance.scale[1] = instance.get_component_from_node(node, transform_paths, "scale.y", 1.0) * instance.get_component_from_node(node, transform_paths, "scale", 1.0)
+        instance.scale[2] = instance.get_component_from_node(node, transform_paths, "scale.z", 1.0) * instance.get_component_from_node(node, transform_paths, "scale", 1.0)
         
         if not euler_rotation:        
             instance.rotation[0] = instance.get_component_from_node(node, transform_paths, "rotation.w", 1.0)
