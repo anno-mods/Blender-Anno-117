@@ -28,6 +28,7 @@ from .anno_objects import get_anno_object_class, anno_object_classes, Transform,
 def strip_invalid_brackets(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         xml_text = f.read()
+        xml_text = xml_text.replace(';', '')
     return re.sub(r'(<\/?\w+)\s+\[\w+\](?=[^>]*>)', r'\1', xml_text)
 
 def parseStrippedXML(absolute_path):

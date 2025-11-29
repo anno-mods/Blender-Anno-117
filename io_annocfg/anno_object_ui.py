@@ -193,6 +193,7 @@ converter_by_tag = {
     "BlenderModelID": ObjectPointerConverter,
     "BlenderParticleID": ObjectPointerConverter,
     "IdCounter" : IntConverter,
+    "BoneHash":StringConverter,
     "Line" : StringConverter # fix crash for ifo files (feedback area) TODO: represent this as a blender object
 }
 
