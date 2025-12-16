@@ -24,19 +24,12 @@ from .anno_objects import get_anno_object_class, anno_object_classes, Transform,
     SubFile, Decal, Propcontainer, Prop, Particle, IfoCube, IfoPlane, Sequence, DummyGroup, ArbitraryXMLAnnoObject, Material, \
     Dummy, Cf7DummyGroup, Cf7Dummy, FeedbackConfig, Light, IfoFile, Cf7File, IslandFile, PropGridInstance, IslandGamedataFile, AssetsXML,\
     Animation, Cloth, BezierCurve, GameObject, AnimationsNode, AnimationSequences, AnimationSequence, Track, TrackElement, IfoMeshHeightmap,BezierCurve,Spline
-
-def strip_invalid_brackets(file_path):
-    with open(file_path, 'r', encoding='utf-8') as f:
-        xml_text = f.read()
-        xml_text = xml_text.replace(';', '')
-    return re.sub(r'(<\/?\w+)\s+\[\w+\](?=[^>]*>)', r'\1', xml_text)
+from .utils import data_path_to_absolute_path, strip_invalid_brackets, to_data_path
 
 def parseStrippedXML(absolute_path):
     stripped = strip_invalid_brackets(absolute_path)
     tree = ET.parse(io.StringIO(stripped))
     return tree
-
-from .utils import data_path_to_absolute_path, to_data_path
 
 class ExportAnnoFc(Operator, ExportHelper):
     """Parses Anno (1800) .cfg files and automatically imports and positions all models, props, particles and decals in the scene. Can also import .prp files into your scene, but you must select a parent object"""
@@ -296,6 +289,10 @@ class ImportAnnoCfg(Operator, ImportHelper):
     def execute(self, context):
         parent = context.active_object
         dirname = os.path.dirname(self.filepath)
+        rda_path = IO_AnnocfgPreferences.get_path_to_rda_folder()
+        if (not rda_path):
+            self.report({'ERROR_INVALID_CONTEXT'}, f"Missing path to rda folder.")
+            return {'CANCELLED'}
         for f in self.files:
             self.filepath = os.path.join(dirname, f.name)
             print("IMPORTING FILE", self.filepath)
@@ -1017,7 +1014,7 @@ class ImportAllCfgsOperator(Operator, ImportHelper):
             for directory in PurePath(data_path).parts[:-1]:
                 if directory not in ["graphics", "data"]:
                     collection.asset_data.tags.new(directory)
-            bpy.ops.ed.lib_id_generate_preview({"id": collection})
+            collection.asset_generate_preview()
         return {"FINISHED"}
 
 

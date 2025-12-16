@@ -145,3 +145,10 @@ def xml_smart(parent : ET.Element, key, value):
         switchDict[datatype](parent, key, value)
         return 
     xml_default(parent, key, value)
+
+def strip_invalid_brackets(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        xml_text = f.read()
+    stripped =  re.sub(r'(<\/?\w+)\s+\[\w+\](?=[^>]*>)', r'\1', xml_text)
+    stripped =  re.sub(r'[\x00-\x1f\x7f-\x9f]', '', stripped) #remove unicode control characters
+    return stripped.replace(';', '')

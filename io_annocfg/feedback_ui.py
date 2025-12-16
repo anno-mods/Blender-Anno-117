@@ -102,10 +102,11 @@ class FeedbackSequenceListItem(PropertyGroup):
             ('TimedIdleAnimation', 'TimedIdleAnimation', 'Repeat animation for time in ms')],
             default='IdleAnimation')
     
-    sequence: IntProperty( # type: ignore
+    sequence: EnumProperty( # type: ignore
             name='Sequence',
             description='Animation Sequence',
-            default = -1)
+            items= feedback_enums.animation_sequences,
+            default='idle01')
     
     target_empty: PointerProperty(name="TargetDummy", type=bpy.types.Object) # type: ignore
     
