@@ -93,6 +93,7 @@ class AnnoBasicShader:
             if l.has_default_value():
                 socket.default_value = l.default_value    
         anno_shader.interface.new_socket(socket_type = "NodeSocketShader", name = "Shader", in_out='OUTPUT')
+        anno_shader.interface.new_socket(socket_type = "NodeSocketVector", name = "UvMap", in_out='OUTPUT')
         return anno_shader
 
     def create_anno_shader(self):

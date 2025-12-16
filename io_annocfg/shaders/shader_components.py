@@ -285,6 +285,32 @@ class StringLink(AbstractLink):
         except: 
             input.default_value = self.default_value if self.has_default_value() else ""
 
+class VectorLink(AbstractLink): 
+    def __init__(self, link_key, flag_key, is_invalid = False, default_value = None):
+        super().__init__(default_value, is_invalid)
+        self.socket_type = "NodeSocketVector"
+        self.flag_key = flag_key
+        self.link_key = link_key
+
+    def to_xml(self, parent : ET.Element, blender_material):
+        input = self.get_input(blender_material)
+        value = ""
+        if(input is not None):
+            value = input.default_value
+
+        flag = ET.SubElement(parent, self.flag_key)
+        flag.text = str(round(value, 6))
+
+    def to_blender(self, shader, material_node : ET.Element, blender_material):
+        input = self.get_input(blender_material)
+        subnode = material_node.find(self.flag_key)
+        if subnode is None:
+            input.default_value = ""
+        try:
+            input.default_value = subnode.text
+        except: 
+            input.default_value = self.default_value if self.has_default_value() else ""
+
 class ColorLink(AbstractLink): 
     def __init__(self, link_key, flag_key, is_invalid = False, default_value = None):
         super().__init__(default_value, is_invalid)

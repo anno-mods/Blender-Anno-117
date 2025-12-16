@@ -13,7 +13,8 @@ class A8_DefaultShader(AnnoBasicShader):
     def __init__(self):
         super().__init__()
 
-        self.shader_id = "A8_DefaultShader"        
+        self.shader_id = "A8_DefaultShader"     
+        self.add_link(VectorLink("Uv Map", "UvMap"))   
         self.add_link(IntegerLink("NumBonesPerVertex", "NumBonesPerVertex", 0))
         self.compose(A8_MetallicComponent())
         self.compose(A8_DiffuseComponent())
