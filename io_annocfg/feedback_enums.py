@@ -1,21 +1,37 @@
 from collections import ChainMap
+import struct
 
-SEQUENCE_ID_BY_NAME = {"none":-1,"zero":0, "idle01":1000, "idle02":1001, "idle03":1002, "idle04":1003, "idle05":1003, "death01":1005, "talk01":1010, "talk02":1011, "greet01":1020, \
-    "bow01":1021, "cheer01":1030, "cheer02":1031, "cheer03":1032, "lookat01":1040, "lookat02":1041, "protest01":1050, "protest02":1051, "laydown01":1060, \
-    "laydown02":1061, "laydown03":1062, "fishing01":1070, "fishing02":1071, "fishing03":1072, "dance01":1080, "dance02":1081, "dance03":1082, "dance04":1083, "fight01":1090, \
-    "fight02":1091, "walk01":2000, "walk02":2001, "walk03":2002, "walk04":2003, "walk05":2004, "walk06":2005, "walk07":2005, "drunkenwalk01":2010, "drunkenwalk02":2011, \
-    "run01":2100, "panicrun01":2101, "panicrun02":2102, "donate01":2200, "buy01":2201, "buy02":2202, "work01":3000, "work02":3001, "work03":3002, \
-    "work04":3003, "work05":3004, "work06":3005, "stand01":4000, "build01":5000, "portrait_neutral_idle":10000, "portrait_neutral_talk":10001, \
-    "portrait_friendly_idle":10010, "portrait_friendly_talk":10011, "portrait_angry_idle":10020, "portrait_angry_talk":10021, "portrait_neutral_talk_idle":10030, \
-    "portrait_friendly_talk_idle":10031, "portrait_angry_talk_idle":10040, "extFire01":5100, "extFire02":5101, "extFire03":5102, "pray01":5200, \
-    "protestwalk01":5300, "protestwalk02":5301, "protest03":1052, "protest04":1053, "protest05":1054, "protest06":1055, "fight03":1092, "protestwalk03":5302, \
-    "fight04":1093, "fight05":1094, "work_staged01":3010, "work_staged02":3011, "work_staged03":3012, "takeoff01":5400, "land01":5410, "riotspecial01":5350, \
-    "riotspecial02":5351, "boosted":3050, "riotspecial03":5352, "sitdown01":5500, "sitdown02":5501, "sitdown03":5502, "explode01":2300, "explode02":2301, \
-    "explode03":2302, "explode04":2303, "idleLoaded01":6000, "walkingLoaded01":6001, "hitwood":2400, "hitbrick":2401, "hitsteel":2402, "hitconcrete":2403, \
-    "misswater":2410, "missland":2411, "work07":3006, "work08":3007, "work09":3008, "work10":3009, "work11":3020, "work12":3021, "work13":3022, \
-    "work14":3023, "work15":3024, "work16":3025, "work17":3026, "work18":3027, "work19":3028}
+#found in config/game/datasets.xml 
+#<Name>([A-Za-z0-9]+)</Name><Id>([0-9]+)</Id> -> $2:"$1"
+SEQUENCE_ACTION_BY_ID = {0:"Legacy",1:"Combat",2:"Audience",3:"Building",4:"Freetime",5:"Negative",6:"Neutral",7:"Portrait",8:"Positive",9:"Protest",10:"Riding",11:"Social",12:"Transport",13:"TransportIdle",14:"TransportWalk",15:"Work",16:"Melee",17:"Charge",18:"Ranged",19:"Door",20:"NoTitle5",21:"NoTitle6",22:"NoTitle7",23:"NoTitle8",24:"NoTitle9",25:"NoTitle10",26:"NoTitle11",27:"NoTitle12",28:"NoTitle13",29:"NoTitle14",30:"NoTitle15",31:"NoTitle152",32:"NoTitle16",33:"NoTitle17",34:"NoTitle18",35:"NoTitle19",36:"NoTitle20",37:"NoTitle21",38:"NoTitle22",39:"NoTitle23",40:"NoTitle24",41:"NoTitle25",42:"NoTitle26",43:"NoTitle27",44:"NoTitle28",45:"NoTitle29",46:"NoTitle30",47:"NoTitle31",48:"NoTitle32",49:"NoTitle33"}
+SEQUENCE_INFO_BY_ID = {291:"LegacyDefault",0:"LegacyIdle",1:"LegacyWalk",2:"LegacyWork",3:"LegacyDeath",4:"LegacyTalk",5:"LegacyGreet",6:"LegacyBow",7:"LegacyCheer",8:"LegacyLookAt",9:"LegacyProtest",10:"LegacyLayDown",11:"LegacyFishing",12:"LegacyDance",13:"LegacyFight",14:"LegacyDrunkenWalk",15:"LegacyRun",16:"LegacyPanicRun",17:"LegacyRiotSpecial",18:"LegacyDonate",19:"LegacyBuy",20:"LegacyStand",21:"LegacyBuild",22:"LegacyExtFire",23:"LegacyPray",24:"LegacyProtestWalk",25:"LegacyTakeOff",26:"LegacyLand",27:"LegacyPortraitNeutralIdle",28:"LegacyPortraitNeutralTalk",29:"LegacyPortraitFriendlyIdle",30:"LegacyPortraitFriendlyTalk",31:"LegacyWorkStaged",32:"LegacyBoosted",33:"LegacySitDown",34:"LegacyExplode",35:"LegacyIdleLoaded",36:"LegacyWalkingLoaded",37:"LegacyHitWood",38:"LegacyHitBrick",39:"LegacyHitSteel",40:"LegacyHitConcrete",41:"LegacyMissWater",42:"LegacyMissLand",43:"LegacyHit",44:"LegacyPortraitAngryIdle",45:"LegacyPortraitAngryTalk",46:"LegacyPortraitNeutralTalkIdle",47:"LegacyPortraitFriendlyTalkIdle",48:"LegacyPortraitAngryTalkIdle",102:"Attack",103:"AttackRanged",104:"Back",105:"Dance",106:"Die",107:"Front",108:"Ground",109:"Hit",110:"Idle",111:"Jog",112:"Lay",113:"Load",114:"Play",115:"Run",116:"Sit",117:"Swim",118:"Talk",119:"TalkIdle",120:"TurnLeft",121:"TurnRight",122:"Up",123:"Walk",124:"Animal",125:"Build",126:"Farm",127:"Fish",128:"Hammer",129:"Shovel",130:"Negative",131:"Neutral",132:"Panic",133:"Positive",134:"Romance",135:"Active",136:"Empty",137:"Land",138:"Passive",139:"TakeOff",292:"Interact",293:"Pray",294:"Cook",295:"Bucket",296:"Harvest",297:"Inspect",298:"Stomp",299:"Broom",300:"Axe",301:"Paint",302:"Torch",303:"Open",304:"Close",305:"Sick",306:"Heal",307:"Stunned",308:"Music",309:"Captured",310:"Serving",311:"Transition",312:"Saw"}
 
-NAME_BY_SEQUENCE_ID = {i : s for s, i in SEQUENCE_ID_BY_NAME.items()}
+ID_BY_SEQUENCE_ACTION = {i : s for s, i in SEQUENCE_ACTION_BY_ID.items()}
+ID_BY_SEQUENCE_INFO = {i : s for s, i in SEQUENCE_INFO_BY_ID.items()}
+
+def sequenceNameFromIntString(s : str) -> str: 
+    seq_id = int(s)
+    binary = struct.pack('i', seq_id)
+    #workaround because bhb is 5 bytes not 4 due to alignment
+    sequence_action, sequence_info_part1, sequence_info_part2, variantIndex = struct.unpack('bbbb', binary)
+    seq_info_binary = struct.pack('bb', sequence_info_part1, sequence_info_part2)
+    sequence_info = struct.unpack('h', seq_info_binary)[0]
+    sequence_action = SEQUENCE_ACTION_BY_ID.get(sequence_action, sequence_action)
+    sequence_info = SEQUENCE_INFO_BY_ID.get(sequence_info, sequence_info)
+    return f"{sequence_action};{sequence_info};{variantIndex}"
+    #return feedback_enums.NAME_BY_SEQUENCE_ID.get(seq_id, "none")
+        
+def sequenceNameToIntString(value : str) -> str: 
+    subvalues = value.split(';')
+    assert(len(subvalues) == 3)
+    sequence_action = int(ID_BY_SEQUENCE_ACTION.get(subvalues[0], subvalues[0]))
+    sequence_info = int(ID_BY_SEQUENCE_INFO.get(subvalues[1], subvalues[1]))
+    variantIndex = int(subvalues[2])
+    seq_info_binary = struct.pack('h', sequence_info)
+    sequence_info_part1, sequence_info_part2 = struct.unpack('bb', seq_info_binary)
+    binary = struct.pack('bbbb', sequence_action, sequence_info_part1, sequence_info_part2, variantIndex)
+    seq_id = struct.unpack('i', binary)[0]
+    return str(seq_id)
 
 #For the enum
 animation_sequences = [

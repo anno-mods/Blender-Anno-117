@@ -41,12 +41,6 @@ from .shaders.water_shader import LiquidShader
 from .shaders.glass_shader import GlassShader
 # import numpy as np
 
-def strip_invalid_brackets(file_path):
-    with open(file_path, 'r', encoding='utf-8') as f:
-        xml_text = f.read()
-    stripped =  re.sub(r'(<\/?\w+)\s+\[\w+\](?=[^>]*>)', r'\1', xml_text)
-    return  re.sub(r'[\x00-\x1f\x7f-\x9f]', '', stripped) #remove unicode control characters
-
 def parseStrippedXML(absolute_path):
     stripped = strip_invalid_brackets(absolute_path)
     tree = ET.parse(io.StringIO(stripped))
@@ -576,8 +570,7 @@ class AnimationSequence(AnnoObject):
     @classmethod
     def blender_name_from_node(cls, node):
         config_type = "SEQUENCE"
-        seq_id = int(get_text(node, "SequenceID", "-1"))
-        name = config_type + "_"+ feedback_enums.NAME_BY_SEQUENCE_ID.get(seq_id, str(seq_id))
+        name = feedback_enums.sequenceNameFromIntString( get_text(node, "SequenceID", "0"))
         return name
 
 
@@ -769,7 +762,7 @@ class SubFile(AnnoObject):
         p.mkdir(parents=True, exist_ok=True)
         
         
-        collection = bpy.data.collections.new(file_obj.name)
+        collection = bpy.data.collections.new(file_obj.name.replace("MAIN_FILE_", ""))
         bpy.context.scene.collection.children.link(collection)
         
         collection.asset_mark()
@@ -778,9 +771,7 @@ class SubFile(AnnoObject):
         for directory in PurePath(data_path).parts[:-1]:
             if directory not in ["graphics", "data"]:
                 collection.asset_data.tags.new(directory)
-        bpy.ops.ed.lib_id_generate_preview({"id": collection})
-        
-        
+        collection.asset_generate_preview()
         recursive_add_to_collection(file_obj, collection)
         objects = []
         for obj in collection.all_objects:
@@ -795,25 +786,25 @@ class SubFile(AnnoObject):
     @classmethod 
     def load_subfile(cls, data_path):
         if data_path is None:
-            return add_empty_to_scene()
+            return None
         fullpath = data_path_to_absolute_path(data_path)
         if not fullpath.exists():
-            return add_empty_to_scene()
+            return None
         
         last_modified = fullpath.stat().st_mtime
         
-        if IO_AnnocfgPreferences.cfg_cache_loading_enabled(): #ToDo: Remove True here!!!
+        if IO_AnnocfgPreferences.cfg_cache_loading_enabled():
             file_obj = cls.try_loading_from_library(data_path, last_modified)
             if file_obj is not None:
                 return file_obj
         try:
             tree = parseStrippedXML(fullpath)
         except:
-            print("Could not import subfile")
-            return add_empty_to_scene()
+            print(f"Failed to parse subfile {data_path}")
+            return None
         root = tree.getroot()
         if root is None:
-            return add_empty_to_scene()
+            return None
         
         file_obj = MainFile.xml_to_blender(root)
         file_obj.name = "MAIN_FILE_" + fullpath.name
@@ -827,8 +818,9 @@ class SubFile(AnnoObject):
     def add_blender_object_to_scene(cls, node) -> BlenderObject:
         subfile_obj = add_empty_to_scene()
         data_path = get_text(node, "FileName", None)
-        file_obj = cls.load_subfile(data_path)  
-        file_obj.parent = subfile_obj
+        file_obj = cls.load_subfile(data_path)
+        if (file_obj):  
+            file_obj.parent = subfile_obj
         return subfile_obj
 
 class Decal(AnnoObject):

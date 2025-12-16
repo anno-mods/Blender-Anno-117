@@ -39,11 +39,9 @@ class BoolPropertyGroup(PropertyGroup):
 
 class FeedbackSequencePropertyGroup(PropertyGroup):
     tag : StringProperty(name = "", default = "SomeSequence") # type: ignore
-    value : EnumProperty( # type: ignore
-        name='',
-        description='Animation Sequence',
-        items= feedback_enums.animation_sequences,
-        default='idle01'
+    value : StringProperty( # type: ignore
+        name="",
+        default="",
     )
 
 class IntPropertyGroup(PropertyGroup):
@@ -132,20 +130,18 @@ class FloatConverter(Converter):
 class FeedbackSequenceConverter(Converter):
     @classmethod
     def data_type(cls):
-        return string
+        return str
     @classmethod
     def from_string(cls, s): 
-        seq_id = int(s)
-        return feedback_enums.NAME_BY_SEQUENCE_ID.get(seq_id, "none")
+        return feedback_enums.sequenceNameFromIntString(s)
     @classmethod
-    def to_string(cls, value): 
-        seq_id = feedback_enums.SEQUENCE_ID_BY_NAME.get(value, -1)
-        return str(seq_id)
+    def to_string(cls, value : str): 
+        return feedback_enums.sequenceNameToIntString(value)
     
 class ObjectPointerConverter(Converter):
     @classmethod
     def data_type(cls):
-        return string
+        return str
     @classmethod
     def from_string(cls, s): 
         return bpy.data.objects[s]
@@ -188,8 +184,8 @@ converter_by_tag = {
     "WATER_CUTOUT_ENABLED" : BoolConverter,
     "ADJUST_TO_TERRAIN_HEIGHT" : BoolConverter, 
     "GLOW_ENABLED": BoolConverter,
-    "SequenceID": IntConverter,
-    "m_IdleSequenceID": IntConverter,
+    "SequenceID": FeedbackSequenceConverter,
+    "m_IdleSequenceID": FeedbackSequenceConverter,
     "BlenderModelID": ObjectPointerConverter,
     "BlenderParticleID": ObjectPointerConverter,
     "IdCounter" : IntConverter,
