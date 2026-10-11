@@ -17,6 +17,8 @@ import sys
 import io
 from collections import defaultdict
 from math import radians
+
+from shaders.a8_default_shader import A8_DefaultShader
 from .prefs import IO_AnnocfgPreferences
 from .utils import *
 from .transform import Transform
@@ -24,9 +26,8 @@ from .material import Material, ClothMaterial
 from .feedback_ui import FeedbackConfigItem, GUIDVariationListItem, FeedbackSequenceListItem
 from . import feedback_enums
 
-from .shaders.default_shader import AnnoDefaultShader
 from .shaders.cloth_shader import ClothShader
-from .shaders.decal_shader import DecalShader
+from .shaders.a8_decal_shader import A8_DecalShader
 from .shaders.cutout_shader import CutoutShader
 from .shaders.mine_cutout_shader import MineCutoutShader
 from .shaders.mockup_shader import MockupShader
@@ -160,12 +161,12 @@ class AnnoObject(ABC):
     child_anno_object_types_without_container: Dict[str, type] = {}
     #f.e. A->Type, <A></A><A></A><A></A>
 
-    default_shader = AnnoDefaultShader()
+    default_shader = A8_DefaultShader()
 
     model_shaders_by_id = {
-        "8" : AnnoDefaultShader(),
+        "8" : A8_DefaultShader(),
         "0" : ClothShader(),
-        "1" : DecalShader(),
+        "1" : A8_DecalShader(),
         "4" : MineCutoutShader(),
         "5" : CutoutShader(),
         "18" : MockupShader(),
@@ -176,8 +177,8 @@ class AnnoObject(ABC):
 
     model_shaders_by_bl_label = {
         "AnnoClothShader" : ClothShader(),
-        "AnnoDefaultShader" : AnnoDefaultShader(),
-        "AnnoDecalShader" : DecalShader(),
+        "A8_DefaultShader" : A8_DefaultShader(),
+        "A8_DecalShader" : A8_DecalShader(),
         "AnnoCutoutShader" : CutoutShader(),
         "AnnoMineCutoutShader" : MineCutoutShader(),
         "AnnoMockupShader" : MockupShader(),

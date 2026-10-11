@@ -7,8 +7,8 @@ from bpy_extras.object_utils import AddObjectHelper
 
 from ..anno_objects import AnnoObject, MainFile, Model, Propcontainer, Prop, Cloth, Decal, SubFile, ClothMaterial
 from ..material import Material
-from ..shaders.default_shader import AnnoDefaultShader
 from ..shaders.a8_default_shader import A8_DefaultShader
+from ..shaders.a8_decal_shader import A8_DecalShader
 
 from ..shaders.prop_decal_shader import DecalPropShader
 from ..shaders.prop_decaldetail_shader import DecalDetailPropShader
@@ -16,7 +16,6 @@ from ..shaders.prop_pbr_shader import SimplePBRPropShader
 from ..shaders.prop_terrain_shader import TerrainPropShader
 from ..shaders.prop_plant_shader import PlantPropShader
 from ..shaders.prop_grass_shader import GrassPropShader
-from ..shaders.decal_shader import DecalShader
 from ..shaders.cutout_shader import CutoutShader
 from ..shaders.cloth_shader import ClothShader
 from ..shaders.mockup_shader import MockupShader
@@ -311,7 +310,7 @@ class shader_decal(bpy.types.Operator):
 
     def execute(self, context):
         node_tree = context.object.active_material.node_tree
-        my_group = DecalShader().add_anno_shader(node_tree.nodes)
+        my_group = A8_DecalShader().add_anno_shader(node_tree.nodes)
         return {"FINISHED"}
 
 class shader_mockup(bpy.types.Operator):
@@ -382,20 +381,7 @@ classes = (
     cfg_menu,
     shader_menu,
     shader_default,
-    shader_prop_simple_pbr,
-    shader_prop_decal_detail,
-    shader_prop_decal,
-    shader_prop_terrain,
-    shader_prop_grass,
-    shader_prop_plant,
-    shader_cloth,
-    shader_cutout,
-    shader_mine_cutout,
     shader_decal,
-    shader_mockup,
-    shader_destruct,
-    shader_water,
-    shader_glass
 )
 
 def register():

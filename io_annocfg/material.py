@@ -228,9 +228,9 @@ class Material:
     
     def add_anno_shader(self, nodes):
         group = nodes.new(type='ShaderNodeGroup')
-        if not "AnnoDefaultShader" in bpy.data.node_groups:
-            SHADER.AnnoDefaultShader().create_anno_shader()            
-        group.node_tree = bpy.data.node_groups["AnnoDefaultShader"]
+        if not "A8_DefaultShader" in bpy.data.node_groups:
+            SHADER.A8_DefaultShader().create_anno_shader()            
+        group.node_tree = bpy.data.node_groups["A8_DefaultShader"]
         return group
         
     def as_blender_material(self):
