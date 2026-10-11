@@ -6,7 +6,7 @@ Blender addon to work with Anno 117 graphics assets.
 - Import/Export of feedback files (.fc)
 
 # Requirements
-- Blender **4(.2)** https://www.blender.org/
+- Blender **5.1** https://www.blender.org/
 - [rdm4](https://github.com/lukts30/rdm4)
 - [texconv](https://github.com/microsoft/DirectXTex)
 - [filedbreader](https://github.com/anno-mods/FileDBReader)
