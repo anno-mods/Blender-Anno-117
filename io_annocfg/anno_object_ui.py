@@ -23,7 +23,7 @@ import math
 
 class XMLTooltip(Operator):
     """Adds a tooltip for dynamic xml content"""
-    bl_idname = "wm.xmltooltiphelper"
+    bl_idname = "wm.a8_xmltooltiphelper"
     bl_label = "Help Entry:"
     
     
@@ -358,9 +358,9 @@ class XMLPropertyGroup(PropertyGroup):
                 split.prop(item, "value")
                 helpstr = helpstrings.help_for_key(item.tag)
                 if helpstr != "UNKNOWN":
-                    row.operator('wm.xmltooltiphelper', icon ="QUESTION", text = "").arg = helpstr
+                    row.operator('wm.a8_xmltooltiphelper', icon ="QUESTION", text = "").arg = helpstr
                 else:
-                    row.operator('wm.xmltooltiphelper', icon ="HELP", text = "").arg = helpstr
+                    row.operator('wm.a8_xmltooltiphelper', icon ="HELP", text = "").arg = helpstr
         for item in self.dynamic_properties:
             if item.deleted:
                 continue
@@ -370,7 +370,7 @@ class XMLPropertyGroup(PropertyGroup):
 
 class PT_AnnoScenePropertyPanel(Panel):
     bl_label = "Anno Scene"
-    bl_idname = "VIEW_3D_PT_AnnoScene"
+    bl_idname = "VIEW_3D_PT_a8_AnnoScene"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Anno Object' 
@@ -387,7 +387,7 @@ class PT_AnnoScenePropertyPanel(Panel):
         col.prop(context.scene, "anno_mod_folder")
 
 class ConvertCf7DummyToDummy(Operator):
-    bl_idname = "object.convertcf7dummy"
+    bl_idname = "object.a8_convertcf7dummy"
     bl_label = "Convert to SAFE Dummy"
 
     def execute(self, context):
@@ -399,7 +399,7 @@ class ConvertCf7DummyToDummy(Operator):
 
 class PasteFromClipboardOperator(Operator):
     """Parses the xml snippet from the clipboard into an anno object. This does NOT perform any checks on the validity of the input, so use with care. Not all ObjectTypes are fully supported, even if listed."""
-    bl_idname = "import.paste_from_clipboard" 
+    bl_idname = "import.a8_paste_from_clipboard"
     bl_label = "Import From Clipboard (Anno)"
     anno_object_by_enum = {str(cls):cls for cls in anno_object_classes}
     def execute(self, context):
@@ -447,7 +447,7 @@ def _label_multiline(context, text, parent, maxlength = None):
         parent.label(text=text_line)
 class PT_AnnoXMLPastePropertyPanel(Panel):
     bl_label = "Anno XML Import"
-    bl_idname = "VIEW_3D_PT_AnnoXMLImport"
+    bl_idname = "VIEW_3D_PT_a8_AnnoXMLImport"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Anno Object' 
@@ -472,7 +472,7 @@ class PT_AnnoXMLPastePropertyPanel(Panel):
 
 class DuplicateDummy(Operator):
     """Duplicates the dummy and gives the duplicate a higher id. Assumes a name like dummy_42."""
-    bl_idname = "object.duplicatedummy"
+    bl_idname = "object.a8_duplicatedummy"
     bl_label = "Duplicate Dummy"
 
     def execute(self, context):
@@ -493,7 +493,7 @@ class DuplicateDummy(Operator):
 
 class CreateGameObjectFromFile(Operator):
     """Creates a game-object entry for this object. You still need to specify the id, guid, var_id, and all other important stuff yourself."""
-    bl_idname = "object.make_game_object"
+    bl_idname = "object.a8_make_game_object"
     bl_label = "Make Game Object (Island Editor)"
 
     def execute(self, context):
@@ -504,7 +504,7 @@ class CreateGameObjectFromFile(Operator):
 
 class ConvertToXML(Operator):
     """Converts the selected object into xml and copies it to the clipboard."""
-    bl_idname = "object.convert_to_xml"
+    bl_idname = "object.a8_convert_to_xml"
     bl_label = "Convert To XML"
 
     def execute(self, context):
@@ -518,7 +518,7 @@ class ConvertToXML(Operator):
 
 class ExportPosition(Operator):
     """Converts the selected object into xml and copies it to the clipboard."""
-    bl_idname = "object.copylocation_rotation"
+    bl_idname = "object.a8_copylocation_rotation"
     bl_label = "Copy Location"
 
     def execute(self, context):
@@ -544,7 +544,7 @@ class ExportPosition(Operator):
 
 class AddFeedbackDummy(Operator):
     """Adds a properly named dummy to the group."""
-    bl_idname = "object.add_feedback_dummy"
+    bl_idname = "object.a8_add_feedback_dummy"
     bl_label = "Add Dummy"
 
     def execute(self, context):
@@ -570,7 +570,7 @@ class AddFeedbackDummy(Operator):
 
 class AddFeedbackGroup(Operator):
     """Adds a dummy group."""
-    bl_idname = "object.add_feedback_group"
+    bl_idname = "object.a8_add_feedback_group"
     bl_label = "Add Group"
     def execute(self, context):
         obj = context.active_object
@@ -586,7 +586,7 @@ class AddFeedbackGroup(Operator):
     
 class AddSimpleAnnoFeedback(Operator):
     """Adds a simple anno feedback object"""
-    bl_idname = "object.add_simple_anno_feedback"
+    bl_idname = "object.add_simple_a8_feedback"
     bl_label = "Adds a simple anno feedback object"
     def execute(self, context):
         obj = context.active_object
@@ -597,7 +597,7 @@ class AddSimpleAnnoFeedback(Operator):
     
 class AddFeedbackConfig(Operator):
     """Adds a feedback config."""
-    bl_idname = "object.add_feedback_config"
+    bl_idname = "object.a8_add_feedback_config"
     bl_label = "Add Feedback Config"
     def execute(self, context):
         obj = context.active_object
@@ -608,7 +608,7 @@ class AddFeedbackConfig(Operator):
 
 class AddFeedbackConfigFromGroup(Operator):
     """Adds a feedback config."""
-    bl_idname = "object.add_feedback_config_from_group"
+    bl_idname = "object.a8_add_feedback_config_from_group"
     bl_label = "Add Feedback Config"
     def execute(self, context):
         group = context.active_object
@@ -622,7 +622,7 @@ class AddFeedbackConfigFromGroup(Operator):
         return {'FINISHED'}
 class FixDummyName(Operator):
     """Names the blender object after the Name entry."""
-    bl_idname = "object.fix_dummy_name"
+    bl_idname = "object.a8_fix_dummy_name"
     bl_label = "Names the blender object after the Name entry."
     
     def execute(self, context):
@@ -674,7 +674,7 @@ def load_animations_for_model(obj):
 
 class MakeCollectionInstanceReal(Operator):
     """Converts an instanced collection (imported from asset browser) into real objects."""
-    bl_idname = "object.make_hierarchical_collection_instance_real"
+    bl_idname = "object.a8_make_hierarchical_collection_instance_real"
     bl_label = "Make Collection Instance Real"
 
     def execute(self, context):
@@ -693,7 +693,7 @@ class MakeCollectionInstanceReal(Operator):
     
 class InstancedCollectionToSubFile(Operator):
     """Converts an instanced collection (imported from asset browser) into a FILE_ object with the appropriate filepath."""
-    bl_idname = "object.instanced_collection_to_subfile"
+    bl_idname = "object.a8_instanced_collection_to_subfile"
     bl_label = "Instanced Collection To SubFile"
 
     def execute(self, context):
@@ -729,7 +729,7 @@ class InstancedCollectionToSubFile(Operator):
 
 class LoadAnimations(Operator):
     """Loads all animations specified in the animations section of this model."""
-    bl_idname = "object.load_animations"
+    bl_idname = "object.a8_load_animations"
     bl_label = "Load Animations"
 
     def execute(self, context):
@@ -741,7 +741,7 @@ class LoadAnimations(Operator):
 
 class LoadAllAnimations(Operator):
     """Loads all animations in this file."""
-    bl_idname = "object.load_all_animations"
+    bl_idname = "object.a8_load_all_animations"
     bl_label = "Load All Animations"
 
     def load_animations_recursively(self, obj):
@@ -765,7 +765,7 @@ def get_main_file_obj(obj):
     
 class DuplicateAnnoObject(Operator):
     """Duplicates the hierarchy below and including the selected object. Also duplicates invisible objects and most importantly, cleans up object references in the sequences. Recommended to use this over Ctrl+D for complex object hierarchies."""
-    bl_idname = "object.duplicate_anno_object"
+    bl_idname = "object.duplicate_a8_object"
     bl_label = "Duplicate Anno Object"
 
     def duplicate_recursively(self, obj):
@@ -820,7 +820,7 @@ class DuplicateAnnoObject(Operator):
     
 class ShowSequence(Operator):
     """Makes all animations belonging to this sequence visible and all others invisible. Also changes the display mode of the main models into Wireframe."""
-    bl_idname = "object.show_sequence"
+    bl_idname = "object.a8_show_sequence"
     bl_label = "Show Sequence"
 
     
@@ -893,7 +893,7 @@ class ShowSequence(Operator):
     
 class ShowModel(Operator):
     """Makes all animations belonging to this sequence invisible and instead displays the normal mesh only."""
-    bl_idname = "object.show_model"
+    bl_idname = "object.a8_show_model"
     bl_label = "Show Model"
 
     
@@ -951,7 +951,7 @@ class ShowModel(Operator):
 
 class PT_AnnoObjectPropertyPanel(Panel):
     bl_label = "Anno Object"
-    bl_idname = "VIEW_3D_PT_AnnoObject"
+    bl_idname = "VIEW_3D_PT_a8_AnnoObject"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Anno Object' 
@@ -1016,7 +1016,7 @@ class PT_AnnoObjectPropertyPanel(Panel):
 
 class PT_AnnoMaterialObjectPropertyPanel(Panel):
     bl_label = "Anno Material"
-    bl_idname = "WINDOW_PT_AnnoMaterialObject"
+    bl_idname = "WINDOW_PT_a8_AnnoMaterialObject"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_category = 'Anno Material' 
@@ -1048,7 +1048,7 @@ class AnnoImageTextureProperties(PropertyGroup):
 
 class PT_AnnoImageTexture(Panel):
     bl_label = "Anno Texture"
-    bl_idname = "SCENE_PT_AnnoTexture"
+    bl_idname = "SCENE_PT_a8_AnnoTexture"
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
     bl_category = 'Anno Texture' 

@@ -40,7 +40,7 @@ def parseStrippedXML(absolute_path):
 
 class ExportAnnoFc(Operator, ExportHelper):
     """Parses Anno (1800) .cfg files and automatically imports and positions all models, props, particles and decals in the scene. Can also import .prp files into your scene, but you must select a parent object"""
-    bl_idname = "export.anno_fc_files" 
+    bl_idname = "export.a8_fc_files"
     bl_label = "Export Anno .fc Files"
     
     # ImportHelper mixin class uses this
@@ -94,7 +94,7 @@ class ExportAnnoFc(Operator, ExportHelper):
 
 class ExportAnnoCfg(ExportAnnoFc, ExportHelper):
     """Exports the selected MAIN_FILE into a .cfg Anno file. Check the export ifo box to also create the .ifo/.cf7 file."""
-    bl_idname = "export.anno_cfg_files" 
+    bl_idname = "export.a8_cfg_files"
     bl_label = "Export Anno .cfg Files"
 
     # ImportHelper mixin class uses this
@@ -253,7 +253,7 @@ class ExportAnnoCfg(ExportAnnoFc, ExportHelper):
 
 class ImportAnnoCfg(Operator, ImportHelper):
     """Parses Anno (1800) .cfg files and automatically imports and positions all models, props, particles and decals in the scene. Can also import .prp files into your scene, but you must select a parent object"""
-    bl_idname = "import.anno_cfg_files" 
+    bl_idname = "import.a8_cfg_files"
     bl_label = "Import Anno .cfg Files"
 
     # ImportHelper mixin class uses this
@@ -419,7 +419,7 @@ class ImportAnnoCfg(Operator, ImportHelper):
 
 class ImportAnnoIsland(Operator, ImportHelper):
     """Parses decoded Anno 1800 island xml files (or at least their prop grid and heightmap) and loads them into blender."""
-    bl_idname = "import.anno_island_files" 
+    bl_idname = "import.a8_island_files"
     bl_label = "Import Anno Island Files (.xml)"
 
     # ImportHelper mixin class uses this
@@ -483,7 +483,7 @@ class ImportAnnoIsland(Operator, ImportHelper):
 
 class ImportAnnoIslandGamedata(Operator, ImportHelper):
     """Parses decoded Anno 1800 island gamedata xml files and loads them into blender."""
-    bl_idname = "import.anno_island_gamedata_files" 
+    bl_idname = "import.a8_island_gamedata_files"
     bl_label = "Import Anno Island Gamedata Files (.xml)"
 
     # ImportHelper mixin class uses this
@@ -514,7 +514,7 @@ class ImportAnnoIslandGamedata(Operator, ImportHelper):
 
 class ExportAnnoIsland(Operator, ExportHelper):
     """Exports the prop grid elements of an island file. Not the heightmap, etc. Cannot handle new props (yet). Exports ALL objects in this scene, so do not load multiple islands at once."""
-    bl_idname = "export.anno_island_files" 
+    bl_idname = "export.a8_island_files"
     bl_label = "Export Anno Island Files (.xml)"
 
     # ImportHelper mixin class uses this
@@ -552,7 +552,7 @@ class ExportAnnoIsland(Operator, ExportHelper):
 
 class ExportAnnoIslandGamedata(Operator, ExportHelper):
     """Exports the IslandGamedata Objects. Exports ALL objects in this scene, so do not load multiple islands at once."""
-    bl_idname = "export.anno_island_gamedata_files" 
+    bl_idname = "export.a8_island_gamedata_files"
     bl_label = "Export Anno Island Gamedata Files (.xml)"
 
     # ImportHelper mixin class uses this
@@ -589,7 +589,7 @@ class ExportAnnoIslandGamedata(Operator, ExportHelper):
 
 class ImportAnnoModelOperator(Operator, ImportHelper):
     """Imports the selected .glb/.rdm file as MODEL_."""
-    bl_idname = "import.anno_model_files" 
+    bl_idname = "import.a8_model_files"
     bl_label = "Import Anno Model (.glb, .rmd)"
     
     filename_ext = ".glb;.rdm"
@@ -644,7 +644,7 @@ class ImportAnnoModelOperator(Operator, ImportHelper):
 
 class ImportAnnoPropOperator(Operator, ImportHelper):
     """Imports the selected .prp file as PROP."""
-    bl_idname = "import.anno_prp_files" 
+    bl_idname = "import.a8_prp_files"
     bl_label = "Import Anno Prop (.prp)"
     
     filename_ext = ".prp"
@@ -684,7 +684,7 @@ class ImportAnnoPropOperator(Operator, ImportHelper):
 
 class ExportAnnoModelOperator(Operator, ExportHelper):
     """Exports the selected MODEL as .glb/.rdm. Takes care of applying loc, rot, sca and mirroring the object along the x axis."""
-    bl_idname = "export.anno_model_files" 
+    bl_idname = "export.a8_model_files"
     bl_label = "Export Anno Model (.glb, .rmd)"
     
     filename_ext = ".rdm"
@@ -802,7 +802,7 @@ class ExportAnnoModelOperator(Operator, ExportHelper):
             
 # class ExportAnimatedAnnoModelOperator(Operator, ExportHelper):
 #     """Exports the selected ANIMATION."""
-#     bl_idname = "export.anno_animation_files" 
+#     bl_idname = "export.a8_animation_files"
 #     bl_label = "Export Anno Animation (.rdm)"
     
 #     filename_ext = ".rdm"
@@ -871,7 +871,7 @@ class ExportAnnoModelOperator(Operator, ExportHelper):
     
 class OBJECT_OT_add_anno_object(Operator, AddObjectHelper):
     """Create a new Anno Feedback Object"""
-    bl_idname = "mesh.add_anno_object"
+    bl_idname = "mesh.add_a8_object"
     bl_label = "Add Anno Feedback Object"
     bl_options = {'REGISTER', 'UNDO'}
     object_type: EnumProperty( # type: ignore
@@ -917,7 +917,7 @@ class ImportAllPropsOperator(Operator, ImportHelper):
     As there are thousands of props, it might take a lot of time (just go outside for a walk or something).
     Ignores all props that cannot be loaded as a 3d object (when the rdm converter fails). As this happens with almost all decal_details, they are ignored to save time."""
 
-    bl_idname = "anno_props_library.import_all"
+    bl_idname = "a8_props_library.import_all"
     bl_label = "Import All Anno Props"
     
     filename_ext = "."
@@ -972,7 +972,7 @@ class ImportAllPropsOperator(Operator, ImportHelper):
 class ImportAllCfgsOperator(Operator, ImportHelper):
     """Import all cfgs (located in the rda folder) into this file. Use this to create an asset library from this .blend file. """
 
-    bl_idname = "anno_cfgs_library.import_all"
+    bl_idname = "a8_cfgs_library.import_all"
     bl_label = "Import All Anno Cfgs"
     
     filename_ext = "."

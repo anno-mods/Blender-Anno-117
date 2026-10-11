@@ -1,5 +1,4 @@
 from .shader_base import AnnoBasicShader
-from .default_shader import AnnoDefaultShader
 from .shader_components import *
 from .shader_node_templates import ShaderTemplate
 

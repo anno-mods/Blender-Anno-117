@@ -25,7 +25,7 @@ from ..shaders.glass_shader import GlassShader
 from ..shaders.mine_cutout_shader import MineCutoutShader
 
 class generic_cfg_object(Operator, AddObjectHelper):
-    bl_idname = "mesh.add_anno_117_cfgobj"
+    bl_idname = "mesh.add_a8_117_cfgobj"
     bl_options = {'REGISTER', 'UNDO'}
     bl_label = "Add Anno 117 Object"
 
@@ -46,49 +46,49 @@ class generic_cfg_object(Operator, AddObjectHelper):
         return {'FINISHED'}
 
 class cfg_mainfile(generic_cfg_object):
-    bl_idname = "mesh.add_anno_117_mainfile"
+    bl_idname = "mesh.add_a8_117_mainfile"
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.TargetObject = MainFile()
 
 class cfg_model(generic_cfg_object):
-    bl_idname = "mesh.add_anno_117_model"
+    bl_idname = "mesh.add_a8_117_model"
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.TargetObject = Model()
 
 class cfg_propcontainer(generic_cfg_object):
-    bl_idname = "mesh.add_anno_117_propcontainer"
+    bl_idname = "mesh.add_a8_117_propcontainer"
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.TargetObject = Propcontainer()
 
 class cfg_prop(generic_cfg_object):
-    bl_idname = "mesh.add_anno_117_prop"
+    bl_idname = "mesh.add_a8_117_prop"
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.TargetObject = Prop()
 
 class cfg_cloth(generic_cfg_object):
-    bl_idname = "mesh.add_anno_117_cloth"
+    bl_idname = "mesh.add_a8_117_cloth"
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.TargetObject = Cloth()
 
 class cfg_decal(generic_cfg_object):
-    bl_idname = "mesh.add_anno_117_decal"
+    bl_idname = "mesh.add_a8_117_decal"
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.TargetObject = Decal()
 
 class cfg_subfile(generic_cfg_object):
-    bl_idname = "mesh.add_anno_117_subfile"
+    bl_idname = "mesh.add_a8_117_subfile"
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.TargetObject = SubFile()
 
 class cfg_menu(bpy.types.Menu):
-    bl_idname="add.anno_objects_117"
+    bl_idname="add.a8_objects_117"
     bl_label="Anno Objects"
 
     def draw(self, context):
@@ -132,7 +132,7 @@ class cfg_menu(bpy.types.Menu):
 
 
 class shader_menu(bpy.types.Menu):
-    bl_idname="add.anno_shaders"
+    bl_idname="add.a8_shaders"
     bl_label="Anno 117 Shaders"
 
     def draw(self, context):
@@ -141,6 +141,11 @@ class shader_menu(bpy.types.Menu):
         layout.operator(
             shader_default.bl_idname,
             text="Default 117 (ID: 8)",
+            icon='FILE_BLANK'
+        )
+        layout.operator(
+            shader_decal.bl_idname,
+            text="Decal 117 (ID: 1)",
             icon='FILE_BLANK'
         )
 
@@ -157,7 +162,7 @@ def add_anno_shader_menu(self, context):
         icon='FILE_BLEND')
 
 class shader_default(bpy.types.Operator):
-    bl_idname = "node.add_anno_shader_117"
+    bl_idname = "node.add_a8_shader_117"
     bl_label  = "Add Default Anno 117 Shader"
 
     @classmethod
@@ -171,7 +176,7 @@ class shader_default(bpy.types.Operator):
         return {"FINISHED"}
 
 class shader_prop_simple_pbr(bpy.types.Operator):
-    bl_idname = "node.add_anno_shader_prop_simple_pbr"
+    bl_idname = "node.add_a8_shader_prop_simple_pbr"
     bl_label  = "Add Prop:SimplePBR Anno Shader"
 
     @classmethod
@@ -185,7 +190,7 @@ class shader_prop_simple_pbr(bpy.types.Operator):
         return {"FINISHED"}
 
 class shader_prop_decal(bpy.types.Operator):
-    bl_idname = "node.add_anno_shader_prop_decal"
+    bl_idname = "node.add_a8_shader_prop_decal"
     bl_label  = "Add Prop:Decal Anno Shader"
 
     @classmethod
@@ -199,7 +204,7 @@ class shader_prop_decal(bpy.types.Operator):
         return {"FINISHED"}
 
 class shader_prop_decal_detail(bpy.types.Operator):
-    bl_idname = "node.add_anno_shader_prop_decal_detail"
+    bl_idname = "node.add_a8_shader_prop_decal_detail"
     bl_label  = "Add Prop:DecalDetail Anno Shader"
 
     @classmethod
@@ -213,7 +218,7 @@ class shader_prop_decal_detail(bpy.types.Operator):
         return {"FINISHED"}
 
 class shader_prop_terrain(bpy.types.Operator):
-    bl_idname = "node.add_anno_shader_prop_terrain"
+    bl_idname = "node.add_a8_shader_prop_terrain"
     bl_label  = "Add Prop:DecalDetail Anno Shader"
 
     @classmethod
@@ -227,7 +232,7 @@ class shader_prop_terrain(bpy.types.Operator):
         return {"FINISHED"}
 
 class shader_prop_grass(bpy.types.Operator):
-    bl_idname = "node.add_anno_shader_prop_grass"
+    bl_idname = "node.add_a8_shader_prop_grass"
     bl_label  = "Add Prop:DecalDetail Anno Shader"
 
     @classmethod
@@ -241,7 +246,7 @@ class shader_prop_grass(bpy.types.Operator):
         return {"FINISHED"}
 
 class shader_prop_plant(bpy.types.Operator):
-    bl_idname = "node.add_anno_shader_prop_plant"
+    bl_idname = "node.add_a8_shader_prop_plant"
     bl_label  = "Add Prop:DecalDetail Anno Shader"
 
     @classmethod
@@ -257,7 +262,7 @@ class shader_prop_plant(bpy.types.Operator):
 
 # todo (Taube) this is broken, reimplement this operator for actual cloth when shaders are rewritten.
 class shader_cloth(bpy.types.Operator):
-    bl_idname = "node.add_anno_shader_cloth"
+    bl_idname = "node.add_a8_shader_cloth"
     bl_label  = "Add Custom Node Group"
 
     @classmethod
@@ -271,7 +276,7 @@ class shader_cloth(bpy.types.Operator):
         return {"FINISHED"}
 
 class shader_cutout(bpy.types.Operator):
-    bl_idname = "node.add_anno_shader_cutout"
+    bl_idname = "node.add_a8_shader_cutout"
     bl_label  = "Add Custom Node Group"
 
     @classmethod
@@ -286,7 +291,7 @@ class shader_cutout(bpy.types.Operator):
 
 
 class shader_mine_cutout(bpy.types.Operator):
-    bl_idname = "node.add_anno_shader_mine_cutout"
+    bl_idname = "node.add_a8_shader_mine_cutout"
     bl_label  = "Add Custom Node Group"
 
     @classmethod
@@ -300,7 +305,7 @@ class shader_mine_cutout(bpy.types.Operator):
         return {"FINISHED"}
 
 class shader_decal(bpy.types.Operator):
-    bl_idname = "node.add_anno_shader_decal"
+    bl_idname = "node.add_a8_shader_decal"
     bl_label  = "Add Custom Node Group"
 
     @classmethod
@@ -314,7 +319,7 @@ class shader_decal(bpy.types.Operator):
         return {"FINISHED"}
 
 class shader_mockup(bpy.types.Operator):
-    bl_idname = "node.add_anno_shader_mockup"
+    bl_idname = "node.add_a8_shader_mockup"
     bl_label  = "Add Custom Node Group"
 
     @classmethod
@@ -328,7 +333,7 @@ class shader_mockup(bpy.types.Operator):
         return {"FINISHED"}
 
 class shader_destruct(bpy.types.Operator):
-    bl_idname = "node.add_anno_shader_destruct"
+    bl_idname = "node.add_a8_shader_destruct"
     bl_label  = "Add Custom Node Group"
 
     @classmethod
@@ -342,7 +347,7 @@ class shader_destruct(bpy.types.Operator):
         return {"FINISHED"}
 
 class shader_water(bpy.types.Operator):
-    bl_idname = "node.add_anno_shader_water"
+    bl_idname = "node.add_a8_shader_water"
     bl_label  = "Add Custom Node Group"
 
     @classmethod
@@ -356,7 +361,7 @@ class shader_water(bpy.types.Operator):
         return {"FINISHED"}
     
 class shader_glass(bpy.types.Operator):
-    bl_idname = "node.add_anno_shader_glass"
+    bl_idname = "node.add_a8_shader_glass"
     bl_label  = "Add Custom Node Group"
 
     @classmethod

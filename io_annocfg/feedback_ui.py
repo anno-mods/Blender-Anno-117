@@ -217,7 +217,7 @@ class FEEDBACK_SEQUENCE_UL_List(UIList):
 class FEEDBACK_GUID_LIST_OT_NewItem(Operator):
     """Add a new item to the list."""
 
-    bl_idname = "feedback_guid_list.new_item"
+    bl_idname = "feedback_guid_list.a8_new_item"
     bl_label = "Add a new item"
 
     def execute(self, context):
@@ -230,7 +230,7 @@ class FEEDBACK_GUID_LIST_OT_NewItem(Operator):
 class FEEDBACK_GUID_LIST_OT_DeleteITem(Operator):
     """Delete the selected item from the list."""
 
-    bl_idname = "feedback_guid_list.delete_item"
+    bl_idname = "feedback_guid_list.a8_delete_item"
     bl_label = "Deletes an item"
 
     @classmethod
@@ -249,7 +249,7 @@ class FEEDBACK_GUID_LIST_OT_DeleteITem(Operator):
 class LIST_OT_DeleteItem(Operator):
     """Delete the selected item from the list."""
 
-    bl_idname = "feedback_sequence_list.delete_item"
+    bl_idname = "feedback_sequence_list.a8_delete_item"
     bl_label = "Deletes an item"
 
     @classmethod
@@ -278,8 +278,8 @@ def load_sequence(obj, selected_sequence_id):
             sequence_id = feedback_enums.NAME_BY_SEQUENCE_ID.get(sequence_id, str(sequence_id))
             if selected_sequence_id == sequence_id:
                 bpy.context.view_layer.objects.active = subfile_seq
-                bpy.ops.object.show_model()
-                bpy.ops.object.show_sequence()
+                bpy.ops.object.a8_show_model()
+                bpy.ops.object.a8_show_sequence()
                 return {"INFO"}, f"Successfully loaded {selected_sequence_id}."
     return {"ERROR"}, f"Missing Sequence {selected_sequence_id} on {obj.name}"
 
@@ -311,7 +311,7 @@ def update_feedback_unit(fcfg_obj):
 class FEEDBACK_OT_UpdateFeedbackUnit(Operator):
     """Updates the feedback unit to the currently selected entry in the feedback sequence list. Can be used to visualize the feedback. No effect in game."""
 
-    bl_idname = "feedback_unit.update"
+    bl_idname = "feedback_unit.a8_update"
     bl_label = "Updates the feedback unit to the currently selected entry in the feedback sequence list. Can be used to visualize the feedback. No effect in game."
 
     def execute(self, context):
@@ -327,7 +327,7 @@ class FEEDBACK_OT_UpdateFeedbackUnit(Operator):
 class FEEDBACK_OT_DeleteFeedbackUnit(Operator):
     """Deletes the visual feedback unit (blender only)"""
 
-    bl_idname = "feedback_unit.delete"
+    bl_idname = "feedback_unit.a8_delete"
     bl_label = "Deletes the visual feedback unit (blender only)"
     def delete_recursively(self, obj):
         for o in obj.children:
@@ -347,7 +347,7 @@ class FEEDBACK_OT_DeleteFeedbackUnit(Operator):
 class FEEDBACK_OT_LoadFeedbackUnit(Operator):
     """Loads one of the GuidVariation cfgs. Can be used to visualize the feedback. No effect in game."""
 
-    bl_idname = "feedback_unit.load"
+    bl_idname = "feedback_unit.a8_load"
     bl_label = "Loads one of the GuidVariation cfgs. Can be used to visualize the feedback. No effect in game."
 
     def execute(self, context):
@@ -366,9 +366,9 @@ class FEEDBACK_OT_LoadFeedbackUnit(Operator):
         #If the model was loaded from cache, it only is an instanced collection
         if unit_obj.instance_collection is not None:
             print("Loaded feedback unit from cache, making it real.")
-            bpy.ops.object.make_hierarchical_collection_instance_real()
+            bpy.ops.object.a8_make_hierarchical_collection_instance_real()
         
-        bpy.ops.object.load_all_animations()
+        bpy.ops.object.a8_load_all_animations()
         # bpy.context.view_layer.objects.active = unit_obj
         # bpy.ops.object.ShowSequence()
         
@@ -404,7 +404,7 @@ def get_dummy_index(dummy):
 
 class AutogenerateWalkSequence(Operator):
     """Uses the parent dummy group of the default state dummy to create a walk sequence."""
-    bl_idname = "object.autogenerate_walk_sequence"
+    bl_idname = "object.a8_autogenerate_walk_sequence"
     bl_label = "Generate Walk Sequence From DefaultDummy"
     def execute(self, context):
         obj = context.active_object
@@ -437,7 +437,7 @@ class AutogenerateWalkSequence(Operator):
 class LIST_OT_NewItem(Operator):
     """Add a new item to the list."""
 
-    bl_idname = "feedback_sequence_list.new_item"
+    bl_idname = "feedback_sequence_list.a8_new_item"
     bl_label = "Add a new item"
 
     def execute(self, context):
@@ -449,7 +449,7 @@ class LIST_OT_NewItem(Operator):
 class LIST_OT_DuplicateItem(Operator):
     """Add a new item to end of the list (duplicate of selected one)."""
 
-    bl_idname = "feedback_sequence_list.duplicate_item"
+    bl_idname = "feedback_sequence_list.a8_duplicate_item"
     bl_label = "Duplicate selected item"
 
     def execute(self, context):
@@ -465,7 +465,7 @@ class LIST_OT_DuplicateItem(Operator):
 class LIST_OT_MoveItem(Operator):
     """Move an item in the list."""
 
-    bl_idname = "feedback_sequence_list.move_item"
+    bl_idname = "feedback_sequence_list.a8_move_item"
     bl_label = "Move an item in the list"
 
     direction: bpy.props.EnumProperty(items=(('UP', 'Up', ""),  # type: ignore
@@ -522,7 +522,7 @@ def available_animations(unit_obj):
 class PT_FeedbackConfig(Panel):
     """Demo panel for UI list Tutorial."""
     bl_label = "Simple Anno Feedback Encoding"
-    bl_idname = "VIEW_3D_PT_AnnoObjectFeedbackConfig"
+    bl_idname = "VIEW_3D_PT_a8_AnnoObjectFeedbackConfig"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Anno Object' 
@@ -556,18 +556,18 @@ class PT_FeedbackConfig(Panel):
         col.label(text = "GUIDVariationList")
         
         if context.active_object.feedback_unit is None:
-            col.operator('feedback_unit.load', text='Load Feedback Unit')
+            col.operator('feedback_unit.a8_load', text='Load Feedback Unit')
         else:
             r = col.row()
-            r.operator('feedback_unit.update', text='Update Feedback Unit')
-            r.operator('feedback_unit.delete', text='Delete Feedback Unit')
+            r.operator('feedback_unit.a8_update', text='Update Feedback Unit')
+            r.operator('feedback_unit.a8_delete', text='Delete Feedback Unit')
         col.prop(context.active_object, "feedback_unit", text="Feedback Visualization Unit")
         
         col.template_list("FEEDBACK_GUID_UL_List", "feedback_guid_list", active_object,
                           "feedback_guid_list", active_object, "feedback_guid_list_index", rows = 1)
         row = col.row()
-        row.operator('feedback_guid_list.new_item', text='New')
-        row.operator('feedback_guid_list.delete_item', text='Remove')
+        row.operator('feedback_guid_list.a8_new_item', text='New')
+        row.operator('feedback_guid_list.a8_delete_item', text='Remove')
         
         feedback_sequence_box = layout.box()
         header = feedback_sequence_box.row()
@@ -588,11 +588,11 @@ class PT_FeedbackConfig(Panel):
                           "feedback_sequence_list", active_object, "feedback_sequence_list_index")
 
         row = feedback_sequence_box.row()
-        row.operator('feedback_sequence_list.new_item', text='New')
-        row.operator('feedback_sequence_list.delete_item', text='Remove')
-        row.operator('feedback_sequence_list.duplicate_item', text='Copy')
-        row.operator('feedback_sequence_list.move_item', text='UP').direction = 'UP'
-        row.operator('feedback_sequence_list.move_item', text='DOWN').direction = 'DOWN'
+        row.operator('feedback_sequence_list.a8_new_item', text='New')
+        row.operator('feedback_sequence_list.a8_delete_item', text='Remove')
+        row.operator('feedback_sequence_list.a8_duplicate_item', text='Copy')
+        row.operator('feedback_sequence_list.a8_move_item', text='UP').direction = 'UP'
+        row.operator('feedback_sequence_list.a8_move_item', text='DOWN').direction = 'DOWN'
 
 
 classes = [

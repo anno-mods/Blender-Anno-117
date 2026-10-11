@@ -17,14 +17,14 @@
 # ##### END GPL LICENSE BLOCK #####
 
 bl_info = {
-    "name": "Annocfg ImportExport",
+    "name": "Anno 117 Blender Addon",
     "author": "xormenter",
     "version": (4, 0, 0),
     "blender": (5, 1, 0),
     "location": "File > Import > Anno (.cfg)",
-    "description": "Allows importing and exporting configuration files for Anno 1800 3d models.",
-    "doc_url": "https://github.com/xormenter/Blender-Anno-.cfg-Import-Addon",
-    "tracker_url": "https://github.com/xormenter/Blender-Anno-.cfg-Import-Addon/issues",
+    "description": "Allows creating, importing and exporting configuration files for Anno 117 3d models.",
+    "doc_url": "https://github.com/anno-mods/Blender-Anno-117",
+    "tracker_url": "https://github.com/anno-mods/Blender-Anno-117/issues",
     "category": "Import-Export",
 }
 

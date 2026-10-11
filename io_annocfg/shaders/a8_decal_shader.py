@@ -1,8 +1,7 @@
-from shaders.shader_base import AnnoBasicShader
+from .shader_base import AnnoBasicShader
 
 from .shader_node_templates import ShaderTemplate
 
-from .default_shader import AnnoDefaultShader
 from .shader_components import A8_DiffuseComponent, A8_DyeMaskComponent, A8_GlossFactorComponent, A8_GlowComponent, A8_HeightComponent, A8_MaterialBlendingComponent, A8_MetallicComponent, A8_NightGlowComponent, A8_NormalComponent, A8_OpacityComponent, A8_SheenComponent, A8_TerrainAdaptionComponent, A8_TerrainTintingComponent, A8_UvMappingComponent, AdditionalPBRShaderComponent, CommonShaderComponent, DefaultShaderFakeComponent, DyeMaskTexScrollShaderComponent, EnumLink, EnvironmentShaderComponent, GlowShaderComponent, IntegerLink, StringLink, TerrainAdaptionShaderComponent, VertexFormatShaderComponent
 
 class A8_DecalShader(AnnoBasicShader):

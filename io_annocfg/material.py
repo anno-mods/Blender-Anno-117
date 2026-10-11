@@ -12,7 +12,7 @@ from collections import defaultdict
 from .prefs import IO_AnnocfgPreferences
 from .utils import *
 
-from .shaders import default_shader as SHADER
+from .shaders import a8_default_shader as SHADER
 
 
 class Material:

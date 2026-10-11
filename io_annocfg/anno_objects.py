@@ -18,7 +18,7 @@ import io
 from collections import defaultdict
 from math import radians
 
-from shaders.a8_default_shader import A8_DefaultShader
+from .shaders.a8_default_shader import A8_DefaultShader
 from .prefs import IO_AnnocfgPreferences
 from .utils import *
 from .transform import Transform

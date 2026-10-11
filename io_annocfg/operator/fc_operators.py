@@ -23,7 +23,7 @@ def get_cf7file_ancestor(obj):
     return None
 
 class generic_fc_object(Operator, AddObjectHelper):
-    bl_idname = "mesh.add_anno_cfgobj"
+    bl_idname = "mesh.add_a8_cfgobj"
     bl_options = {'REGISTER', 'UNDO'}
     bl_label = "Add Anno Object"
 
@@ -61,7 +61,7 @@ class fc_object_with_id(generic_fc_object):
 
 class fc_file(generic_fc_object):
     """Adds a new Fc File"""
-    bl_idname = "mesh.add_anno_feedbackfile"
+    bl_idname = "mesh.add_a8_feedbackfile"
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.TargetObject = Cf7File()
@@ -77,7 +77,7 @@ class fc_file(generic_fc_object):
 
 class fc_Dummy(fc_object_with_id):
     """Creates a new Dummy inside the selected DummyGroup"""
-    bl_idname = "mesh.add_anno_dummy"
+    bl_idname = "mesh.add_a8_dummy"
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.TargetObject = Cf7Dummy()
@@ -90,7 +90,7 @@ class fc_Dummy(fc_object_with_id):
 
 class fc_DummyGroup(fc_object_with_id):
     """Creates a new DummyGroup inside the selected fc file or DummyGroup"""
-    bl_idname = "mesh.add_anno_dummygroup"
+    bl_idname = "mesh.add_a8_dummygroup"
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.TargetObject = Cf7DummyGroup()
@@ -104,7 +104,7 @@ class fc_DummyGroup(fc_object_with_id):
         return o_class == Cf7DummyGroup or o_class == Cf7File
 
 class fc_menu(bpy.types.Menu):
-    bl_idname="add.anno_fc_objects"
+    bl_idname="add.a8_fc_objects"
     bl_label="Anno Feedback Objects"
 
     def draw(self, context):
