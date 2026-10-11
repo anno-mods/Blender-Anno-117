@@ -14,7 +14,7 @@ class A8_DefaultShader(AnnoBasicShader):
         super().__init__()
 
         self.shader_id = "A8_DefaultShader"        
-        self.add_link(IntegerLink("NumBonesPerVertex", "NumBonesPerVertex", 0))
+        self.compose(VertexFormatShaderComponent())
         self.compose(A8_MetallicComponent())
         self.compose(A8_DiffuseComponent())
         self.compose(A8_NormalComponent())
@@ -31,7 +31,6 @@ class A8_DefaultShader(AnnoBasicShader):
         self.compose(A8_MaterialBlendingComponent())
 
         # override default vertexformat
-        self.material_properties["VertexFormat"] = "P4h_N4b_G4b_B4b_T2h"
         self.material_properties["ShaderID"] = "8"
 
     def create_anno_shader(self):
